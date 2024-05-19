@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from app import db, bcrypt
 from models import User
 from flask_jwt_extended import create_access_token
-
+from datetime import timedelta
 
 auth_blueprint = Blueprint("quizzing", __name__, url_prefix="/api")
 
@@ -38,7 +38,8 @@ def login():
 
     if user and bcrypt.check_password_hash(user.password, password):
         access_token = create_access_token(
-            identity={"id": user.id, "username": user.username, "email": user.email}
+            identity={"id": user.id, "username": user.username, "email": user.email},
+            expires_delta=timedelta(days=2),
         )
         return jsonify({"access_token": access_token}), 200
 
