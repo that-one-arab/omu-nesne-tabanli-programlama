@@ -37,6 +37,7 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 # Import blueprints
 from routes.auth import auth_blueprint
+from routes.user import user_blueprint
 from routes.quizzing import quizzing_blueprint
 
 # Register blueprints
@@ -45,6 +46,7 @@ api_blueprint = Blueprint("api", __name__)
 
 # Register the blueprints with the root API blueprint
 api_blueprint.register_blueprint(auth_blueprint, url_prefix="/auth")
+api_blueprint.register_blueprint(user_blueprint, url_prefix="/user")
 api_blueprint.register_blueprint(quizzing_blueprint, url_prefix="/quizzing")
 
 # Register the root API blueprint with the app
