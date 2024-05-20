@@ -9,3 +9,4 @@ class Config(object):
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "jwt-secret-key"
+    SQLALCHEMY_ECHO = False  # Set to True to see SQL queries output in the console
