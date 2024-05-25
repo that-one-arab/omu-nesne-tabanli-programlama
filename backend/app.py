@@ -3,11 +3,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 from config import Config
 from celery_util import celery_init_app
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+CORS(app)
 
 celery_app = celery_init_app(app)
 celery_app.autodiscover_tasks()
