@@ -42,6 +42,17 @@ def login():
             identity={"id": user.id, "username": user.username, "email": user.email},
             expires_delta=timedelta(days=2),
         )
-        return jsonify({"access_token": access_token}), 200
+        return (
+            jsonify(
+                {
+                    "id": user.id,
+                    "name": user.name,
+                    "username": user.username,
+                    "email": user.email,
+                    "access_token": access_token,
+                }
+            ),
+            200,
+        )
 
     return jsonify({"message": "Invalid credentials"}), 401
