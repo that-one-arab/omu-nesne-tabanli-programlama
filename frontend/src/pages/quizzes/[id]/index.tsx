@@ -2,7 +2,7 @@ import React from "react";
 import QuizQuestionPreview, {
   Question,
 } from "@/components/QuizQuestionPreview";
-import DefaultLayout from "@/components/DefaultLayout";
+import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog";
 import { useRouter } from "next/router";

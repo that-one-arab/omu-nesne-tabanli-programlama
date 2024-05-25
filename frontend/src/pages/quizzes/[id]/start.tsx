@@ -14,7 +14,7 @@ import {
   ButtonPropsColorOverrides,
 } from "@mui/material";
 import { OverridableStringUnion } from "@mui/types";
-import DefaultLayout from "@/components/DefaultLayout";
+import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosNewIcon from "@mui/icons-material/ArrowForwardIos";
