@@ -1,0 +1,16 @@
+{
+    "navbar": {
+        "language": "Dil"
+    },
+    "languages": {
+        "arabic": "Arapça",
+        "english": "İngilizce",
+        "turkish": "Türkçe"
+    },
+    "header": "Sınav Arkadaşı",
+    "subtitle": "Yapay zekayı kullanarak, yüklediğiniz dosyalara göre bir test oluşturun.",
+    "savedExams": "Kaydedilen Sınavlar",
+    "newExam": "Yeni Sınav",
+    "submit": "Gönder",
+    "creatingQuiz": "Sınav Oluşturuluyor..."
+}

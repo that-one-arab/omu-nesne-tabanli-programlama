@@ -1,0 +1,40 @@
+{
+    "navbar": {
+        "language": "Language"
+    },
+    "languages": {
+        "arabic": "Arabic",
+        "english": "English",
+        "turkish": "Turkish"
+    },
+    "header": "Quiz Buddy",
+    "subtitle": "Use AI to generate a quiz based on the files you upload.",
+    "savedExams": "Saved Quizzes",
+    "newExam": "New Quiz",
+    "submit": "Submit",
+    "creatingQuiz": "Creating Quiz...",
+    "subjectTitle": "Subject Title",
+    "subjectTitlePlaceholder": "Enter the title of the subject (EG: Math)",
+    "quizTitle": "Quiz Title",
+    "quizTitlePlaceholder": "Enter an identifying title for the quiz",
+    "quizDescription": "Quiz Description",
+    "quizDescriptionPlaceholder": "Enter whatever you want to describe the quiz",
+    "quizPercentage": "Quiz Percentage",
+    "quizPercentagePlaceholder": "Minimum percentage to pass the quiz",
+    "percentage": "Percentage",
+    "startQuiz": "Start Quiz",
+    "deleteQuiz": "Delete Quiz",
+    "questions": "Questions",
+    "next": "Next",
+    "previous": "Previous",
+    "choices": "Choices",
+    "cannotSubmitPleaseAnswerAllQuestionsBeforeSubmitting": "Cannot submit. Please answer all questions before submitting.",
+    "close": "Close",
+    "congratulationsYou": "Congratulations! You",
+    "passed": "passed",
+    "sorryYou": "Sorry! You",
+    "failed": "failed",
+    "backToHome": "Back to Home",
+    "searchQuiz": "Search Quiz",
+    "subject": "Subject"
+}
