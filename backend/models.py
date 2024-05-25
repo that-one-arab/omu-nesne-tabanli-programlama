@@ -5,6 +5,7 @@ from util.index import BaseModel
 
 class User(BaseModel):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), index=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password = db.Column(db.String(248))

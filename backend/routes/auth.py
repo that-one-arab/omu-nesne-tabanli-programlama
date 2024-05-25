@@ -10,6 +10,7 @@ auth_blueprint = Blueprint("quizzing", __name__, url_prefix="/api")
 @auth_blueprint.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
+    name = data.get("name")
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
@@ -21,7 +22,7 @@ def register():
         return jsonify({"message": "User already exists"}), 400
 
     hashed_password = bcrypt.generate_password_hash(password).decode("utf-8")
-    new_user = User(username=username, email=email, password=hashed_password)
+    new_user = User(name=name, username=username, email=email, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
 
