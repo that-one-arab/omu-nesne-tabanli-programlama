@@ -1,4 +1,4 @@
-import DefaultLayout from "@/components/DefaultLayout";
+import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { CREATE_QUIZ_ROUTE, VIEW_QUIZZES_ROUTE } from "@/constants/routes";
 import { NextPage } from "next";
 import { useTranslation } from "next-i18next";
