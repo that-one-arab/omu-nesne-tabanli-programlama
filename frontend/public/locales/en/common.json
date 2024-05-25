@@ -36,5 +36,15 @@
     "failed": "failed",
     "backToHome": "Back to Home",
     "searchQuiz": "Search Quiz",
-    "subject": "Subject"
+    "subject": "Subject",
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "rememberMe": "Remember Me",
+    "fullName": "Name",
+    "signup": "Sign Up",
+    "alreadyHaveAnAccount": "Already have an account?",
+    "dontHaveAnAccount": "Don't have an account?",
+    "confirmPassword": "Confirm Password"
 }
