@@ -8,6 +8,7 @@ from models import Quiz, Question, Answer, Subject, QuizAttempt, UserChoice
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import current_user
 from uuid import uuid4
+import tasks
 
 quizzing_blueprint = Blueprint("auth", __name__, url_prefix="/api")
 
@@ -76,27 +77,6 @@ def delete_subject(subject_id):
     )
 
 
-# Helper function to generate questions and answers using AI (dummy implementation)
-def generate_questions_and_answers():
-    # This function should be replaced with actual AI logic to generate questions and answers.
-    return [
-        {
-            "title": "Sample Question 1",
-            "answers": [
-                {"title": "Answer 1", "is_correct": True},
-                {"title": "Answer 2", "is_correct": False},
-            ],
-        },
-        {
-            "title": "Sample Question 2",
-            "answers": [
-                {"title": "Answer 1", "is_correct": False},
-                {"title": "Answer 2", "is_correct": True},
-            ],
-        },
-    ]
-
-
 # Create Quiz
 @quizzing_blueprint.route("/quizzes", methods=["POST"])
 @jwt_required()
@@ -129,7 +109,20 @@ def create_quiz():
             remove_files(created_files_paths)
             return jsonify({"message": "No selected file"}), 400
 
-        if file and allowed_file(file.filename):
+        if file and not allowed_file(file.filename):
+            remove_files(created_files_paths)
+            return (
+                jsonify(
+                    {
+                        "error": "Invalid file extension, supported extensions are: "
+                        + app.config["ALLOWED_EXTENSIONS"]
+                    }
+                ),
+                400,
+            )
+
+    for file in files:
+        if file:
             filename = secure_filename(file.filename)
             filename = str(uuid4()) + "." + get_file_extension(file.filename)
 
@@ -138,55 +131,18 @@ def create_quiz():
             file.save(file_path)
             created_files_paths.append(file_path)
 
-    quiz = Quiz(
-        subject_id=subject_id,
-        title=title,
-        success_percentage=success_percentage,
-        description=description,
-        duration=duration,
-        created_by_id=current_user.id,
+    task = tasks.create_quiz.delay(
+        current_user.id,
+        subject_id,
+        title,
+        success_percentage,
+        description,
+        duration,
+        number_of_questions,
+        created_files_paths,
     )
 
-    try:
-        quiz_gpt = QuizGPT(files=created_files_paths)
-        questions, response_code, response_message = quiz_gpt.generate_questions(
-            num_questions=number_of_questions
-        )
-
-        # If no questions were generated
-        if len(questions) <= 0:
-            remove_files(created_files_paths)
-            return jsonify({"error": response_message}), 400
-
-        # Save the questions and answers to the database
-        for q in questions:
-            question = Question(title=q.title)
-            for a in q.answers:
-                answer = Answer(title=a.title, is_correct=a.is_correct)
-                question.answers.append(answer)
-            quiz.questions.append(question)
-
-        db.session.add(quiz)
-        db.session.commit()
-        remove_files(created_files_paths)
-
-        return (
-            jsonify(
-                {
-                    "message": "Quiz created successfully.",
-                    "quiz_id": quiz.id,
-                    "details": {
-                        "response_message": response_message,
-                        "response_code": response_code,
-                    },
-                }
-            ),
-            201,
-        )
-
-    except Exception as e:
-        remove_files(created_files_paths)
-        raise Exception(e)
+    return jsonify({"task_id": task.id}), 202
 
 
 # Get Quizzes

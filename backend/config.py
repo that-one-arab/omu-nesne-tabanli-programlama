@@ -18,3 +18,8 @@ class Config(object):
     UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER") or "/uploads"
     ALLOWED_EXTENSIONS = {"pdf"}
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50 MB limit
+    CELERY = dict(
+        broker_url=os.environ.get("CELERY_BROKER_URL") or "redis://localhost",
+        result_backend=os.environ.get("CELERY_RESULT_BACKEND") or "redis://localhost",
+        task_ignore_result=True,
+    )

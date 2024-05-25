@@ -4,9 +4,13 @@ from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
 from config import Config
+from celery_util import celery_init_app
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+celery_app = celery_init_app(app)
+celery_app.autodiscover_tasks()
 
 # Initialize the database
 db = SQLAlchemy(app)
@@ -39,6 +43,7 @@ def user_lookup_callback(_jwt_header, jwt_data):
 from routes.auth import auth_blueprint
 from routes.user import user_blueprint
 from routes.quizzing import quizzing_blueprint
+from routes.tasks import tasks_blueprint
 
 # Register blueprints
 # Blueprint for the API (root URL: /api)
@@ -48,6 +53,7 @@ api_blueprint = Blueprint("api", __name__)
 api_blueprint.register_blueprint(auth_blueprint, url_prefix="/auth")
 api_blueprint.register_blueprint(user_blueprint, url_prefix="/user")
 api_blueprint.register_blueprint(quizzing_blueprint, url_prefix="/quizzing")
+api_blueprint.register_blueprint(tasks_blueprint, url_prefix="/tasks")
 
 # Register the root API blueprint with the app
 app.register_blueprint(api_blueprint, url_prefix="/api")
