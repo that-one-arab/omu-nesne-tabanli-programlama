@@ -1,7 +1,10 @@
 import { validateToken } from "@/util/api";
 import { NextRequest, NextResponse } from "next/server";
+import Cookies from "universal-cookie";
 
 export async function middleware(request: NextRequest) {
+  const cookies = new Cookies(null, { path: "/" });
+
   const token = request.cookies.get("token")?.value;
   const currentUrl = new URL(request.url);
   const dashboardUrl = new URL("/", request.url);
@@ -9,33 +12,29 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute =
     currentUrl.pathname === "/login" || currentUrl.pathname === "/signup";
 
-  // Redirect to login page if there is no token and the route is not public
-  if (!token && !isPublicRoute) {
-    return NextResponse.redirect(
-      new URL(
-        `/login?sessionExpired=true&redirectTo=${request.nextUrl.pathname}`,
-        request.url
-      )
-    );
-  }
-  // Validate token if it exists and the route is public to redirect to the home page
   if (token && isPublicRoute) {
     const isValid = await validateToken(token);
-    if (isValid) {
-      return NextResponse.redirect(dashboardUrl);
+    if (!isValid) {
+      cookies.remove("token");
+      return;
     }
 
-    return NextResponse.redirect(
-      new URL(
-        `/login?sessionExpired=true&redirectTo=${request.nextUrl.pathname}`,
-        request.url
-      )
-    );
+    return NextResponse.redirect(dashboardUrl);
   }
 
-  if (token && !isPublicRoute) {
+  if (!isPublicRoute) {
+    if (!token) {
+      return NextResponse.redirect(
+        new URL(
+          `/login?sessionExpired=true&redirectTo=${request.nextUrl.pathname}`,
+          request.url
+        )
+      );
+    }
+
     const isValid = await validateToken(token);
     if (!isValid) {
+      cookies.remove("token");
       return NextResponse.redirect(
         new URL(
           `/login?sessionExpired=true&redirectTo=${request.nextUrl.pathname}`,
