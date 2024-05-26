@@ -13,7 +13,10 @@ const DefaultLayout = ({
   pageDescription?: string;
 }) => {
   return (
-    <div className="absolute min-h-screen" style={{ minWidth: "100vw" }}>
+    <div
+      className="absolute min-h-screen bg-gray-100"
+      style={{ minWidth: "100vw" }}
+    >
       <Head>
         <title>{pageTitle || DEFAULT_PAGE_TITLE}</title>
         {pageDescription && (

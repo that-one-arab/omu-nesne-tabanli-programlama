@@ -25,10 +25,7 @@ export async function middleware(request: NextRequest) {
   if (!isPublicRoute) {
     if (!token) {
       return NextResponse.redirect(
-        new URL(
-          `/login?sessionExpired=true&redirectTo=${request.nextUrl.pathname}`,
-          request.url
-        )
+        new URL(`/login?redirectTo=${request.nextUrl.pathname}`, request.url)
       );
     }
 

@@ -1,12 +1,17 @@
+import WelcomeToAppDialog from "@/components/Dialogs/WelcomeToAppDialog";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { CREATE_QUIZ_ROUTE, VIEW_QUIZZES_ROUTE } from "@/constants/routes";
 import { NextPage } from "next";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const Main: NextPage = () => {
   const { t } = useTranslation();
+  const router = useRouter();
+
+  const isFirstLogin = router.query?.isFirstLogin === "true";
 
   return (
     <DefaultLayout>
@@ -34,6 +39,12 @@ const Main: NextPage = () => {
             </Link>
           </div>
         </div>
+        <WelcomeToAppDialog
+          open={isFirstLogin}
+          onClose={() => {
+            router.push("/", undefined, { shallow: true });
+          }}
+        />
       </main>
     </DefaultLayout>
   );

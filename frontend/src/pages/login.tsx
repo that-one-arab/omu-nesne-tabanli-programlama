@@ -64,7 +64,10 @@ function Login() {
 
     const data = await login(email, password);
     user.setUser(data);
-    router.push("/");
+
+    const redirectTo = router.query?.redirectTo as string;
+
+    redirectTo ? router.push(redirectTo) : router.push("/");
   };
 
   return (

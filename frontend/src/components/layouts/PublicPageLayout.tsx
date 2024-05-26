@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+import PublicPageNavbar from "@/components/PublicPageNavbar";
 import Head from "next/head";
 
 const DEFAULT_PAGE_TITLE = "Quiz Buddy";
@@ -21,7 +21,7 @@ const PublicPageLayout = ({
         )}
       </Head>
 
-      <Navbar />
+      <PublicPageNavbar />
       {children}
     </div>
   );
