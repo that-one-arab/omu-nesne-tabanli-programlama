@@ -3,7 +3,6 @@ from flask import Blueprint, jsonify, request
 from app import db, app
 from werkzeug.utils import secure_filename
 from util.index import allowed_file, get_file_extension, remove_files
-from util.quizgpt.index import QuizGPT
 from models import Quiz, Question, Answer, Subject, QuizAttempt, UserChoice
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import current_user
