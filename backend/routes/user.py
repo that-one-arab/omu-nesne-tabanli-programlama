@@ -74,3 +74,13 @@ def change_username():
     db.session.commit()
 
     return jsonify({"message": "Username changed successfully!"}), 200
+
+
+@user_blueprint.route("/delete-account", methods=["DELETE"])
+@jwt_required()
+def delete_account():
+    user = User.query.get_or_404(current_user.id)
+    db.session.delete(user)
+    db.session.commit()
+
+    return jsonify({"message": "Account deleted successfully!"}), 200
