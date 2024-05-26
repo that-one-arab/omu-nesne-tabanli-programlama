@@ -46,5 +46,6 @@
     "signup": "Sign Up",
     "alreadyHaveAnAccount": "Already have an account?",
     "dontHaveAnAccount": "Don't have an account?",
-    "confirmPassword": "Confirm Password"
+    "confirmPassword": "Confirm Password",
+    "yourSessionHasExpiredPleaseLoginAgain": "Your session has expired. Please login again."
 }

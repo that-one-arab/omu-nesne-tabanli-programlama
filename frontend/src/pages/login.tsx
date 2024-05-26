@@ -3,9 +3,23 @@ import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import PublicPageLayout from "@/components/layouts/PublicPageLayout";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import useSnackbarStore from "@/util/store/snackbar";
+import { login } from "@/util/api";
+import { useUser } from "@/util/hooks";
 
 function Login() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const user = useUser();
+  const showSnackbar = useSnackbarStore((state) => state.showSnackbar);
+  const { sessionExpired } = router.query;
+
+  useEffect(() => {
+    if (sessionExpired === "true") {
+      showSnackbar(t("common:yourSessionHasExpiredPleaseLoginAgain"), "error");
+    }
+  }, [sessionExpired, showSnackbar, t]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,7 +51,7 @@ function Login() {
     setRememberMe(event.target.checked);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const email = (event.target as HTMLFormElement).email.value;
     const password = (event.target as HTMLFormElement).password.value as string;
@@ -47,6 +61,10 @@ function Login() {
       localStorage.setItem("email", email);
       localStorage.setItem("password", password);
     }
+
+    const data = await login(email, password);
+    user.setUser(data);
+    router.push("/");
   };
 
   return (

@@ -8,6 +8,10 @@ export function useUser() {
   const user = useUserProfileStore();
 
   return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    username: user.username,
     setUser: (userData: TLoginApiResponse) => {
       cookies.set("token", userData.token);
 
@@ -22,6 +26,5 @@ export function useUser() {
       cookies.remove("token");
       user.clearUser();
     },
-    user: user,
   };
 }

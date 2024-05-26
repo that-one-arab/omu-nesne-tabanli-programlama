@@ -34,3 +34,14 @@ export async function login(
     token: data.access_token,
   };
 }
+
+export async function validateToken(token: string): Promise<boolean> {
+  const response = await customFetch(
+    "/auth/validate",
+    { method: "GET", headers: { Authorization: `Bearer ${token}` } },
+    true
+  );
+  const data = await response.json();
+
+  return response.ok;
+}

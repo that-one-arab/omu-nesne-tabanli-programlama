@@ -2,21 +2,60 @@ import PublicPageLayout from "@/components/layouts/PublicPageLayout";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
+import { customFetch } from "@/util";
+import { useRouter } from "next/router";
+import useSnackbarStore from "@/util/store/snackbar";
+import { useState } from "react";
+import { login } from "@/util/api";
+import { useUser } from "@/util/hooks";
 
 function Signup() {
   const { t } = useTranslation();
+  const router = useRouter();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const showSnackbar = useSnackbarStore((state) => state.showSnackbar);
+  const { setUser } = useUser();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    setIsSubmitting(true);
+
     const name = (event.target as HTMLFormElement).fullName.value;
     const email = (event.target as HTMLFormElement).email.value;
     const password = (event.target as HTMLFormElement).password.value;
     const confirmPassword = (event.target as HTMLFormElement).confirmpassword
       .value;
 
-    console.info({ name, email, password, confirmPassword });
+    if (password !== confirmPassword) {
+      showSnackbar(t("common:passwordsDoNotMatch"), "error");
+      return;
+    }
 
-    // Implement sign up logic here
+    const response = await customFetch("/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, username: email, email, password }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      if (data.message.toLowerCase().includes("user already exists")) {
+        showSnackbar(t("common:userAlreadyExists"), "error");
+      } else {
+        showSnackbar(t("common:anErrorOccurred"), "error");
+      }
+    }
+
+    const loginData = await login(email, password);
+    setUser(loginData);
+    router.push("/?isFirstLogin=true");
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -86,6 +125,7 @@ function Signup() {
             <button
               type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={isSubmitting}
             >
               {t("common:signup")}
             </button>
