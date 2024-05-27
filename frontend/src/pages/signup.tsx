@@ -34,26 +34,34 @@ function Signup() {
       return;
     }
 
-    const response = await customFetch("/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, username: email, email, password }),
-    });
+    try {
+      const response = await customFetch("/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, username: email, email, password }),
+      });
 
-    if (!response.ok) {
-      const data = await response.json();
-      if (data.message.toLowerCase().includes("user already exists")) {
-        showSnackbar(t("common:userAlreadyExists"), "error");
+      if (!response.ok) {
+        const data = await response.json();
+        if (data.message.toLowerCase().includes("user already exists")) {
+          showSnackbar(t("common:userAlreadyExists"), "error");
+        } else {
+          showSnackbar(t("common:anErrorOccurred"), "error");
+        }
+      }
+
+      const loginData = await login(email, password);
+      setUser(loginData);
+      router.push("/?isFirstLogin=true");
+    } catch (error: any) {
+      if (error.message.toLowerCase().includes("invalid credentials")) {
+        showSnackbar(t("common:invalidCredentials"), "error");
       } else {
-        showSnackbar(t("common:anErrorOccurred"), "error");
+        showSnackbar(t("common:serverError"), "error");
       }
     }
-
-    const loginData = await login(email, password);
-    setUser(loginData);
-    router.push("/?isFirstLogin=true");
 
     setIsSubmitting(false);
   };

@@ -20,11 +20,14 @@ export async function login(
     body: JSON.stringify({ email, password }),
   });
 
-  if (!response.ok) {
-    throw new Error("An error occurred");
-  }
-
   const data = await response.json();
+
+  if (!response.ok) {
+    if (JSON.stringify(data).toLowerCase().includes("invalid credentials")) {
+      throw new Error("Invalid credentials");
+    }
+    throw new Error("Server Error");
+  }
 
   return {
     id: data.id,

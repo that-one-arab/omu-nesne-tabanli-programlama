@@ -49,6 +49,11 @@ function Login() {
   ) => {
     localStorage.setItem("rememberMe", event.target.checked.toString());
     setRememberMe(event.target.checked);
+
+    if (!event.target.checked) {
+      localStorage.removeItem("email");
+      localStorage.removeItem("password");
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -62,12 +67,20 @@ function Login() {
       localStorage.setItem("password", password);
     }
 
-    const data = await login(email, password);
-    user.setUser(data);
+    try {
+      const data = await login(email, password);
+      user.setUser(data);
 
-    const redirectTo = router.query?.redirectTo as string;
+      const redirectTo = router.query?.redirectTo as string;
 
-    redirectTo ? router.push(redirectTo) : router.push("/");
+      redirectTo ? router.push(redirectTo) : router.push("/");
+    } catch (error: any) {
+      if (error.message.toLowerCase().includes("invalid credentials")) {
+        showSnackbar(t("common:invalidCredentials"), "error");
+      } else {
+        showSnackbar(t("common:serverError"), "error");
+      }
+    }
   };
 
   return (
