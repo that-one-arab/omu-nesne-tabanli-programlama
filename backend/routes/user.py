@@ -76,6 +76,23 @@ def change_username():
     return jsonify({"message": "Username changed successfully!"}), 200
 
 
+# Change the name of the current user
+@user_blueprint.route("/change-name", methods=["PUT"])
+@jwt_required()
+def change_name():
+    data = request.get_json()
+    new_name = data.get("new_name")
+
+    if not new_name:
+        return jsonify({"error": "Key 'new_name' is required!"}), 400
+
+    user = User.query.get_or_404(current_user.id)
+    user.name = new_name
+    db.session.commit()
+
+    return jsonify({"message": "Name changed successfully!"}), 200
+
+
 @user_blueprint.route("/delete-account", methods=["DELETE"])
 @jwt_required()
 def delete_account():
