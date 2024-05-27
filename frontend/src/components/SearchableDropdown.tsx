@@ -7,6 +7,7 @@ interface DropdownOption {
 }
 
 interface Props {
+  id?: string;
   placeholder?: string;
   value?: DropdownOption;
   options: DropdownOption[];
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function SearchableDropdown({
+  id,
   placeholder,
   value,
   options,
@@ -53,11 +55,11 @@ export default function SearchableDropdown({
 
           // Optionally clear the search term or take other actions when the dropdown closes
           if (searchTerm) {
-            onChange({
-              id: searchTerm.toLowerCase(),
-              label: searchTerm,
-              value: searchTerm.toLowerCase(),
-            });
+            // onChange({
+            //   id: searchTerm.toLowerCase(),
+            //   label: searchTerm,
+            //   value: searchTerm.toLowerCase(),
+            // });
             // Clear the search term if needed
             // setSearchTerm("");
           }
@@ -88,6 +90,7 @@ export default function SearchableDropdown({
     <div className="relative" ref={dropdownRef}>
       <input
         type="text"
+        id={id}
         value={searchTerm}
         onChange={(e) => {
           if (!isDropdownOpen) {

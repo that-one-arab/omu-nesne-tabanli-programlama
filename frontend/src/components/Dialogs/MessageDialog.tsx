@@ -8,11 +8,13 @@ import { useTranslation } from "next-i18next";
 
 const MessageDialog = ({
   open,
+  title,
   message,
   onClose,
 }: {
   open: boolean;
-  message: string;
+  title: string;
+  message?: string;
   onClose: () => void;
 }) => {
   const { t } = useTranslation();
@@ -34,6 +36,9 @@ const MessageDialog = ({
         }}
       >
         <Box>
+          <Typography textAlign="center" variant="h4" marginTop={2}>
+            {title}
+          </Typography>
           <Typography textAlign="center" variant="h6" marginTop={2}>
             {message}
           </Typography>

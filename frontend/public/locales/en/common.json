@@ -17,6 +17,10 @@
     "subjectTitlePlaceholder": "Enter the title of the subject (EG: Math)",
     "quizTitle": "Quiz Title",
     "quizTitlePlaceholder": "Enter an identifying title for the quiz",
+    "quizDuration": "Quiz Duration",
+    "quizDurationPlaceholder": "Enter the duration of the quiz in minutes",
+    "quizNumberOfQuestions": "Number of Questions",
+    "quizNumberOfQuestionsPlaceholder": "Enter the number of questions you want to have the AI generate",
     "quizDescription": "Quiz Description",
     "quizDescriptionPlaceholder": "Enter whatever you want to describe the quiz",
     "quizPercentage": "Quiz Percentage",
@@ -85,5 +89,10 @@
     "newName": "New Name",
     "confirmDeletion": "Confirm Deletion",
     "cancel": "Cancel",
-    "invalidCredentials": "Invalid credentials"
+    "invalidCredentials": "Invalid credentials",
+    "quizCreatedSuccessfully": "Quiz created successfully",
+    "couldNotGenerateXQuestions_one": "Please keep in mind that we could not generate {{count}} question, but we have generated the rest.",
+    "couldNotGenerateXQuestions_other": "Please keep in mind that we could not generate {{count}} questions, but we have generated the rest.",
+    "materialTooShort": "Uploaded material too short",
+    "materialTooShortSubtitle": "Uploaded material too short for requested number of questions. Please upload more files and/or longer material"
 }

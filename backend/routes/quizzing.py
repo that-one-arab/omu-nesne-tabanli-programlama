@@ -16,10 +16,15 @@ quizzing_blueprint = Blueprint("auth", __name__, url_prefix="/api")
 @quizzing_blueprint.route("/subjects", methods=["GET"])
 @jwt_required()
 def get_subjects():
-    subjects = Subject.query.filter_by(created_by_id=current_user.id).all()
+    search_query = request.args.get("search_query")
+    subjects = Subject.query.filter_by(created_by_id=current_user.id)
+    if search_query:
+        # escape any single or doble quotes in the search query
+        search_query = search_query.replace("'", "").replace('"', "")
+        subjects = subjects.filter(Subject.title.ilike(f"%{search_query}%"))
     subjects_data = [
         {"id": s.id, "title": s.title, "created_by_id": s.created_by_id}
-        for s in subjects
+        for s in subjects.all()
     ]
     return jsonify(subjects_data)
 
@@ -80,12 +85,15 @@ def delete_subject(subject_id):
 @quizzing_blueprint.route("/quizzes", methods=["POST"])
 @jwt_required()
 def create_quiz():
+    print("Creating quiz")
     # Used for error handling and/or cleanup
     created_files_paths = []
 
     files = request.files.getlist("file")
+    print("Files: ", files)
 
     data = request.form.to_dict()
+    print("Data: ", data)
 
     subject_id = data.get("subject_id")
     title = data.get("title")
@@ -95,8 +103,13 @@ def create_quiz():
     number_of_questions = data.get("number_of_questions")
     number_of_questions = int(number_of_questions) if number_of_questions else 0
 
-    # Make sure the subject exists
-    Subject.query.get_or_404(subject_id)
+    print("Subject ID: ", subject_id)
+
+    try:
+        # Make sure the subject exists
+        Subject.query.get_or_404(subject_id)
+    except:
+        return jsonify({"error": "Invalid subject id"}), 400
 
     if len(files) <= 0:
         return jsonify({"message": "No files part in the request"}), 400
