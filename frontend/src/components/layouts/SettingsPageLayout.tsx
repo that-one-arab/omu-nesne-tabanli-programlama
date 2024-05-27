@@ -35,6 +35,18 @@ const SettingsPageLayout = ({ children }: { children: React.ReactNode }) => {
               </li>
               <li>
                 <Link
+                  href="/settings/change-name"
+                  className={`text-lg ${
+                    router.pathname === "/settings/change-name"
+                      ? "font-bold text-blue-600"
+                      : "text-gray-700 hover:underline"
+                  }`}
+                >
+                  {t("common:changeName")}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/settings/change-username"
                   className={`text-lg ${
                     router.pathname === "/settings/change-username"

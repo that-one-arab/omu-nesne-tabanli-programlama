@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type TSeverity = "error" | "warning" | "info";
+type TSeverity = "error" | "warning" | "info" | "success";
 
 type TSnackbarStore = {
   show: boolean;

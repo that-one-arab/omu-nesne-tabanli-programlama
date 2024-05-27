@@ -15,6 +15,7 @@ export function customFetch(
         ...(withToken && {
           Authorization: `Bearer ${cookies.get("token")}`,
         }),
+        "Content-Type": "application/json",
         ...options?.headers,
       },
     }

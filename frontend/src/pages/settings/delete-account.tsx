@@ -3,9 +3,15 @@ import { useState } from "react";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import SettingsPageLayout from "@/components/layouts/SettingsPageLayout";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { customFetch } from "@/util";
+import useSnackbarStore from "@/util/store/snackbar";
+import { useUser } from "@/util/hooks";
 
 const DeleteAccount = () => {
   const { t } = useTranslation();
+  const showSnackbar = useSnackbarStore((state) => state.showSnackbar);
+  const user = useUser();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [password, setPassword] = useState("");
 
@@ -18,11 +24,40 @@ const DeleteAccount = () => {
     setPassword("");
   };
 
-  const handleConfirmDelete = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleConfirmDelete = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Add your delete account logic here
-    console.log("Password:", password);
-    handleCloseDialog();
+
+    try {
+      const response = await customFetch(
+        "/user/delete-account",
+        {
+          method: "DELETE",
+          body: JSON.stringify({
+            password: password,
+          }),
+        },
+        true
+      );
+
+      handleCloseDialog();
+
+      if (response.ok) {
+        user.clearUser();
+        window.location.href = "/login";
+      } else {
+        const data = await response.json();
+        if (JSON.stringify(data).toLowerCase().includes("invalid password")) {
+          showSnackbar(t("common:invalidPassword"), "error");
+        } else {
+          showSnackbar(t("common:serverError"), "error");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      showSnackbar(t("common:serverError"), "error");
+    } finally {
+      handleCloseDialog();
+    }
   };
 
   return (
@@ -56,6 +91,7 @@ const DeleteAccount = () => {
                   </label>
                   <input
                     type="password"
+                    id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
