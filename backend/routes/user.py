@@ -96,7 +96,17 @@ def change_name():
 @user_blueprint.route("/delete-account", methods=["DELETE"])
 @jwt_required()
 def delete_account():
+    data = request.get_json()
+    password = data.get("password")
+
+    if not password:
+        return jsonify({"error": "Key 'password' is required!"}), 400
+
     user = User.query.get_or_404(current_user.id)
+
+    if not bcrypt.check_password_hash(user.password, password):
+        return jsonify({"error": "Invalid password"}), 400
+
     db.session.delete(user)
     db.session.commit()
 
