@@ -1,3 +1,4 @@
+import Confetti from "@/components/Confetti";
 import WelcomeToAppDialog from "@/components/Dialogs/WelcomeToAppDialog";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { CREATE_QUIZ_ROUTE, VIEW_QUIZZES_ROUTE } from "@/constants/routes";
@@ -39,6 +40,8 @@ const Main: NextPage = () => {
             </Link>
           </div>
         </div>
+
+        {isFirstLogin && <Confetti />}
         <WelcomeToAppDialog
           open={isFirstLogin}
           onClose={() => {
