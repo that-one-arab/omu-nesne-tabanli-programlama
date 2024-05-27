@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import { useMediaQuery } from "@mui/material";
 import Head from "next/head";
 
 const DEFAULT_PAGE_TITLE = "Quiz Buddy";
@@ -12,6 +13,8 @@ const DefaultLayout = ({
   pageTitle?: string;
   pageDescription?: string;
 }) => {
+  const isMobile = useMediaQuery("(max-width: 600px)");
+
   return (
     <div
       className="absolute min-h-screen bg-gray-100"
@@ -25,7 +28,7 @@ const DefaultLayout = ({
       </Head>
 
       <Navbar />
-      {children}
+      <div className={isMobile ? "mt-9" : ""}>{children}</div>
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const Navbar = () => {
+const Navbar = ({ className }: { className?: string }) => {
   const { t, i18n } = useTranslation();
   const router = useRouter();
 
@@ -15,7 +15,10 @@ const Navbar = () => {
   };
 
   return (
-    <div className="absolute left-0 flex" style={{ minWidth: "100%" }}>
+    <div
+      className={`absolute left-0 flex ${className}`}
+      style={{ minWidth: "100%" }}
+    >
       <div className="flex items-center p-4">
         {/* Home Icon */}
         <Link href="/" className="mx-2">
@@ -46,7 +49,7 @@ const Navbar = () => {
         </select>
       </div>
 
-      <NavbarUserDropdown className="absolute right-5" />
+      <NavbarUserDropdown className="absolute right-5 top-1" />
     </div>
   );
 };
