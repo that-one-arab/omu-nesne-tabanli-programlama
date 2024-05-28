@@ -1,48 +1,31 @@
-import React from "react";
-import QuizQuestionPreview, {
-  Question,
-} from "@/components/QuizQuestionPreview";
+import React, { useState } from "react";
+import cookie from "cookie";
+import QuizQuestionPreview from "@/components/QuizQuestionPreview";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
+import { GetServerSidePropsContext } from "next";
+import { GetQuizResponse } from "@/util/types";
+import { transformQuiz } from "@/util/data_transformation";
+import { getQuizServerSide } from "@/util/api/quizzes";
 
-const questions: Question[] = [
-  {
-    id: "1",
-    title: "What is the capital of France?",
-    choices: [
-      { id: "1", title: "Paris" },
-      { id: "2", title: "London" },
-      { id: "3", title: "Berlin" },
-      { id: "4", title: "Madrid" },
-    ],
-    correctChoice: { id: "1", title: "Paris" },
-  },
-  {
-    id: "2",
-    title: "What is the capital of Germany?",
-    choices: [
-      { id: "1", title: "Paris" },
-      { id: "2", title: "London" },
-      { id: "3", title: "Berlin" },
-      { id: "4", title: "Madrid" },
-    ],
-    correctChoice: { id: "3", title: "Berlin" },
-  },
-];
+interface Props {
+  data: GetQuizResponse;
+}
 
-const QuizOverview = () => {
+const QuizOverview = ({ data }: Props) => {
+  const quiz = transformQuiz(data);
   const router = useRouter();
   const { t } = useTranslation();
-  const { id, hideQuestions } = router.query;
+  const { id, hideQuestions, hideCorrectAnswers, disableDelete } = router.query;
 
-  // Typically means the user just created the quiz
   const shouldHideQuestions = hideQuestions === "true";
+  const shouldDisableDelete = disableDelete === "true";
+  const shouldHideCorrectAnswers = hideCorrectAnswers === "true";
 
-  const [showConfirmationDialog, setShowConfirmationDialog] =
-    React.useState(false);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 
   // Function to handle starting the quiz
   const handleStartQuiz = () => {
@@ -60,12 +43,25 @@ const QuizOverview = () => {
         <div className="flex flex-wrap md:flex-nowrap justify-between items-center mb-6 mt-8">
           <div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">
-              Subject Title
+              {quiz.subject_title}
             </h2>
-            <h1 className="text-3xl font-bold text-gray-900">Quiz Title</h1>
-            <p className="text-md text-gray-800 mb-2 mt-8">
-              {t("common:percentage")}: 50%
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900">{quiz.title}</h1>
+            <div>
+              <div className="flex space-x-4 mt-8 place-content-between">
+                <p className="text-md text-gray-800">
+                  {t("common:percentage")}:
+                </p>
+                <p className="text-md text-gray-800">
+                  {quiz.success_percentage} %
+                </p>
+              </div>
+              <div className="flex space-x-4 mt-3 place-content-between">
+                <p className="text-md text-gray-800">{t("common:duration")}:</p>
+                <p className="text-md text-gray-800">
+                  {quiz.duration / 60} minutes
+                </p>
+              </div>
+            </div>
           </div>
           <div className="flex justify-end space-x-2 mt-4 md:mt-0">
             <button
@@ -74,7 +70,7 @@ const QuizOverview = () => {
             >
               {t("common:startQuiz")}
             </button>
-            {!shouldHideQuestions && (
+            {!shouldDisableDelete && (
               // We do not want the user to delete a quiz they just created
               <button
                 className="px-5 py-3 bg-red-500 text-white rounded hover:bg-red-700 transition duration-300"
@@ -92,16 +88,19 @@ const QuizOverview = () => {
             to expect from the quiz.
           </p>
         </div>
-        {!shouldHideQuestions && (
-          <div className="space-y-4">
-            <h1 className="text-xl font-bold text-gray-800 mb-2 mt-20">
-              {t("common:questions")} ({questions.length})
-            </h1>
-            {questions.map((item, index) => (
-              <QuizQuestionPreview key={index} question={item} />
+        <div className="space-y-4">
+          <h1 className="text-xl font-bold text-gray-800 mb-2 mt-20">
+            {t("common:questions")} ({quiz.questions.length})
+          </h1>
+          {!shouldHideQuestions &&
+            quiz.questions.map((item, index) => (
+              <QuizQuestionPreview
+                key={index}
+                question={item}
+                hideCorrectAnswer={shouldHideCorrectAnswers}
+              />
             ))}
-          </div>
-        )}
+        </div>
       </div>
       <ConfirmationDialog
         open={showConfirmationDialog}
@@ -115,10 +114,35 @@ const QuizOverview = () => {
   );
 };
 
-export const getServerSideProps = async ({ locale }: { locale: string }) => ({
-  props: {
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const locale = context.locale as string;
+  const quizId = context.params?.id as string;
+
+  const props = {
     ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
+  };
+  const { req } = context;
+
+  // Parse the cookies from the request
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const token = cookies.token;
+
+  const quiz = await getQuizServerSide(quizId, token);
+
+  if ("notFound" in quiz && quiz.notFound) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["common"])),
+      data: quiz,
+    },
+  };
+};
 
 export default QuizOverview;

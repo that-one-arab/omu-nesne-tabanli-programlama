@@ -1,4 +1,5 @@
-import { customFetch } from "@/util";
+import { PUBLIC_API_URL, customFetch } from "@/util";
+import { GetQuizResponse } from "@/util/types";
 import { useEffect, useState } from "react";
 
 interface ISubjectsApiResponse {
@@ -220,4 +221,52 @@ export function useHandleCreateQuiz(): [
   }
 
   return [handleCreateQuiz, { data, loading }];
+}
+
+export async function getQuizServerSide(
+  quizId: string,
+  token: string
+): Promise<GetQuizResponse | { notFound: boolean }> {
+  const response = await fetch(`${PUBLIC_API_URL}/quizzing/quizzes/${quizId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  // Check if the response is ok
+  if (!response.ok) {
+    const statusCode = response.status;
+    if (statusCode === 404) {
+      return {
+        notFound: true,
+      };
+    }
+
+    throw new Error("Failed to fetch quiz");
+  }
+
+  const data = await response.json();
+
+  // Fetch quiz data
+  const subjectResponse = await fetch(
+    `${PUBLIC_API_URL}/quizzing/subjects/${data.subject_id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const subjectData = await subjectResponse.json();
+
+  // Check if the response is ok
+  if (!subjectResponse.ok) {
+    return {
+      notFound: true,
+    };
+  }
+
+  data.subject_title = subjectData.title;
+
+  return data;
 }

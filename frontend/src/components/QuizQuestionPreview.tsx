@@ -24,9 +24,10 @@ export interface Question {
 
 interface Props {
   question: Question;
+  hideCorrectAnswer?: boolean;
 }
 
-const QuizQuestionPreview = ({ question }: Props) => {
+const QuizQuestionPreview = ({ question, hideCorrectAnswer }: Props) => {
   const [expanded, setExpanded] = useState(false);
 
   const handleExpandClick = () => {
@@ -64,7 +65,10 @@ const QuizQuestionPreview = ({ question }: Props) => {
                         color="text.secondary"
                         fontSize="1rem"
                         style={{
-                          color: isCorrectAnswer ? green.A700 : "unset",
+                          color:
+                            !hideCorrectAnswer && isCorrectAnswer
+                              ? green.A700
+                              : "unset",
                           margin: "0 20px",
                         }}
                       >
@@ -76,14 +80,17 @@ const QuizQuestionPreview = ({ question }: Props) => {
                         component="div"
                         fontSize="1rem"
                         style={{
-                          color: isCorrectAnswer ? green.A700 : "unset",
+                          color:
+                            !hideCorrectAnswer && isCorrectAnswer
+                              ? green.A700
+                              : "unset",
                           margin: "0 20px",
                         }}
                       >
                         <span>{answer.title}</span>
                       </Typography>
                     </div>
-                    {isCorrectAnswer ? (
+                    {!hideCorrectAnswer && isCorrectAnswer ? (
                       <Typography
                         sx={{ color: green.A700, margin: "0 20px" }}
                         component="span"

@@ -76,7 +76,9 @@ const CreateExam: NextPage = () => {
           }),
         });
       } else {
-        router.push(`/quizzes/${response.quiz_id}`);
+        router.push(
+          `/quizzes/${response.quiz_id}?hideQuestions=true&disableDelete=true`
+        );
       }
     } catch (error) {
       showSnackbar(t("common:serverError"), "error");
@@ -266,7 +268,11 @@ const CreateExam: NextPage = () => {
             message: "",
           });
           if (data && data.quiz_id) {
-            router.push(`/quizzes/${data && data.quiz_id}`);
+            router.push(
+              `/quizzes/${
+                data && data.quiz_id
+              }?hideQuestions=true&disableDelete=true`
+            );
           }
         }}
       />

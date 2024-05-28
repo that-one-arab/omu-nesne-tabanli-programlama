@@ -29,6 +29,15 @@ def get_subjects():
     return jsonify(subjects_data)
 
 
+@quizzing_blueprint.route("/subjects/<int:subject_id>", methods=["GET"])
+@jwt_required()
+def get_subject(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    if subject.created_by_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+    return jsonify({"id": subject.id, "title": subject.title})
+
+
 # Create Subject
 @quizzing_blueprint.route("/subjects", methods=["POST"])
 @jwt_required()

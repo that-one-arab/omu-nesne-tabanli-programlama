@@ -1,5 +1,8 @@
 import Cookies from "universal-cookie";
 
+export const PUBLIC_API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
 export function customFetch(
   route: string,
   options: RequestInit = {},
@@ -19,11 +22,8 @@ export function customFetch(
     ...options?.headers,
   };
 
-  return fetch(
-    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}${route}`,
-    {
-      ...options,
-      headers,
-    }
-  );
+  return fetch(`${PUBLIC_API_URL}${route}`, {
+    ...options,
+    headers,
+  });
 }
