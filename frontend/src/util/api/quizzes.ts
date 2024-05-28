@@ -223,6 +223,22 @@ export function useHandleCreateQuiz(): [
   return [handleCreateQuiz, { data, loading }];
 }
 
+export function useDeleteQuiz() {
+  async function handleDeleteQuiz(quizId: string) {
+    const response = await customFetch(`/quizzing/quizzes/${quizId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete quiz");
+    }
+
+    return response;
+  }
+
+  return [handleDeleteQuiz];
+}
+
 export async function getQuizServerSide(
   quizId: string,
   token: string

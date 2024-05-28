@@ -94,5 +94,8 @@
     "couldNotGenerateXQuestions_one": "Please keep in mind that we could not generate {{count}} question, but we have generated the rest.",
     "couldNotGenerateXQuestions_other": "Please keep in mind that we could not generate {{count}} questions, but we have generated the rest.",
     "materialTooShort": "Uploaded material too short",
-    "materialTooShortSubtitle": "Uploaded material too short for requested number of questions. Please upload more files and/or longer material"
+    "materialTooShortSubtitle": "Uploaded material too short for requested number of questions. Please upload more files and/or longer material",
+    "areYouSureYouWantToDelete": "Are you sure you want to delete",
+    "thisActionCannotBeUndone": "This action cannot be undone",
+    "quizDeleted": "Quiz deleted successfully"
 }

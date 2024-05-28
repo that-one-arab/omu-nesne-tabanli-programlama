@@ -14,7 +14,7 @@ interface Props {
   onCancel: () => void;
 }
 
-const ConfirmationDialog = ({ open, onConfirm, onCancel }: Props) => {
+const DeleteConfirmationDialog = ({ open, onConfirm, onCancel }: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -57,4 +57,4 @@ const ConfirmationDialog = ({ open, onConfirm, onCancel }: Props) => {
   );
 };
 
-export default ConfirmationDialog;
+export default DeleteConfirmationDialog;

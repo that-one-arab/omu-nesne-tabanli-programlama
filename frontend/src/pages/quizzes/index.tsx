@@ -13,7 +13,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { useRouter } from "next/router";
-import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog";
+import ConfirmationDialog from "@/components/Dialogs/DeleteConfirmationDialog";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
 

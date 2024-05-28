@@ -2,30 +2,36 @@ import React, { useState } from "react";
 import cookie from "cookie";
 import QuizQuestionPreview from "@/components/QuizQuestionPreview";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
+import DeleteConfirmationDialog from "@/components/Dialogs/DeleteConfirmationDialog";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
-import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { GetServerSidePropsContext } from "next";
 import { GetQuizResponse } from "@/util/types";
 import { transformQuiz } from "@/util/data_transformation";
-import { getQuizServerSide } from "@/util/api/quizzes";
+import { getQuizServerSide, useDeleteQuiz } from "@/util/api/quizzes";
+import useSnackbarStore from "@/util/store/snackbar";
 
 interface Props {
   data: GetQuizResponse;
 }
 
 const QuizOverview = ({ data }: Props) => {
-  const quiz = transformQuiz(data);
-  const router = useRouter();
   const { t } = useTranslation();
+  const router = useRouter();
+  const showSnackbar = useSnackbarStore((state) => state.showSnackbar);
+
   const { id, hideQuestions, hideCorrectAnswers, disableDelete } = router.query;
 
   const shouldHideQuestions = hideQuestions === "true";
   const shouldDisableDelete = disableDelete === "true";
   const shouldHideCorrectAnswers = hideCorrectAnswers === "true";
 
+  const [deleteQuiz] = useDeleteQuiz();
+
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+
+  const quiz = transformQuiz(data);
 
   // Function to handle starting the quiz
   const handleStartQuiz = () => {
@@ -33,8 +39,15 @@ const QuizOverview = ({ data }: Props) => {
   };
 
   // Function to handle deleting the quiz
-  const handleDeleteQuiz = () => {
-    console.log("Quiz deleted!");
+  const handleDeleteQuiz = async () => {
+    try {
+      await deleteQuiz(quiz.id);
+      showSnackbar(t("common:quizDeleted"), "success");
+      router.push("/quizzes");
+    } catch (error) {
+      console.error("Failed to delete quiz", error);
+      showSnackbar(t("common:serverError"), "error");
+    }
   };
 
   return (
@@ -102,7 +115,7 @@ const QuizOverview = ({ data }: Props) => {
             ))}
         </div>
       </div>
-      <ConfirmationDialog
+      <DeleteConfirmationDialog
         open={showConfirmationDialog}
         onCancel={() => setShowConfirmationDialog(false)}
         onConfirm={() => {
