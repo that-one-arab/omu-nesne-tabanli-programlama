@@ -133,9 +133,6 @@ export const getServerSideProps = async (
   const locale = context.locale as string;
   const quizId = context.params?.id as string;
 
-  const props = {
-    ...(await serverSideTranslations(locale, ["common"])),
-  };
   const { req } = context;
 
   // Parse the cookies from the request
