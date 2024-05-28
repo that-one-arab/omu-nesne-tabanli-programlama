@@ -1,47 +1,29 @@
 import React from "react";
+import cookie from "cookie";
 import { Box, Typography, Container } from "@mui/material";
 import FinishedQuizQuestionPreview from "@/components/FinishedQuizQuestionPreview";
 import MUIButton from "@/components/MUIButton";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import { GetServerSidePropsContext } from "next";
+import { QuizResult, getQuizAttemptServerSide } from "@/util/api/quizzes";
 
-const questions = [
-  {
-    id: "1",
-    title: "What is the capital of France?",
-    choices: [
-      { id: "1", title: "Paris" },
-      { id: "2", title: "London" },
-      { id: "3", title: "Berlin" },
-      { id: "4", title: "Madrid" },
-    ],
-    correctChoice: { id: "1", title: "Paris" },
-    selectedChoice: { id: "1", title: "Paris" },
-  },
-  {
-    id: "2",
-    title: "What is the capital of Germany?",
-    choices: [
-      { id: "1", title: "Paris" },
-      { id: "2", title: "London" },
-      { id: "3", title: "Berlin" },
-      { id: "4", title: "Madrid" },
-    ],
-    correctChoice: { id: "3", title: "Berlin" },
-    selectedChoice: { id: "3", title: "Berlin" },
-  },
+interface Props {
+  data: {
+    quizResult: QuizResult;
+  };
+}
 
-  // Add more questions as needed
-];
-
-const ResultsPage = () => {
+const ResultsPage = ({ data }: Props) => {
   const router = useRouter();
   const { t } = useTranslation();
 
+  const { quizResult } = data;
+
   const calculateScore = () => {
     let score = 0;
-    questions.forEach((question, index) => {
+    quizResult.questions.forEach((question, index) => {
       if (question.correctChoice.id === question.selectedChoice.id) {
         score += 1;
       }
@@ -50,8 +32,8 @@ const ResultsPage = () => {
   };
 
   const score = calculateScore();
-  const passThreshold = 0.6; // 60%
-  const passed = score / questions.length >= passThreshold;
+  const passThreshold = quizResult.successPercentage * 0.1; // 60%
+  const passed = score / quizResult.questions.length >= passThreshold;
 
   return (
     <Container maxWidth="md">
@@ -66,22 +48,24 @@ const ResultsPage = () => {
         </Typography>
         <Box display="flex" justifyContent="space-around">
           <Typography variant="h6">
-            Score:{" "}
+            {t("common:score")} :{" "}
             <b style={{ color: passed ? "green" : "red" }}>
-              {score} / {questions.length}
+              {score} / {quizResult.questions.length}
             </b>
           </Typography>
           <Typography variant="h6">
             {t("common:percentage")}:{" "}
-            <b style={{ color: passed ? "green" : "red" }}>40%</b>{" "}
+            <b style={{ color: passed ? "green" : "red" }}>
+              {quizResult.successPercentage} %
+            </b>{" "}
           </Typography>
         </Box>
       </Box>
 
       <Box
         sx={{
-          height: "60vh", // Set a fixed height
-          overflowY: "scroll", // Enable vertical scrolling
+          height: "60vh",
+          overflowY: "scroll",
           "&::-webkit-scrollbar": {
             width: "10px",
           },
@@ -90,18 +74,33 @@ const ResultsPage = () => {
             borderRadius: "10px",
           },
           "&::-webkit-scrollbar-thumb": {
-            background: "linear-gradient(45deg, #bebebe 30%, #878585 90%);", // Fancy scrollbar color
+            background: "linear-gradient(45deg, #bebebe 30%, #878585 90%);",
             borderRadius: "10px",
           },
           padding: "30px",
-          borderRadius: "10px", // Rounded corners for the container
-          border: "1px solid #ccc", // Subtle border for the container
-          boxShadow: "0 2px 4px rgba(0,0,0,0.2)", // Soft shadow for depth
-          mb: 2, // Margin bottom for spacing
+          borderRadius: "10px",
+          border: "1px solid #ccc",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          mb: 2,
         }}
       >
-        {questions.map((question, index) => (
-          <FinishedQuizQuestionPreview question={question} key={question.id} />
+        {quizResult.questions.map((question, index) => (
+          <FinishedQuizQuestionPreview
+            question={{
+              id: question.id,
+              title: question.title,
+              selectedChoice: {
+                id: question.selectedChoice.id,
+                title: question.selectedChoice.title as string,
+              },
+              correctChoice: question.correctChoice,
+              choices: question.choices.map((choice) => ({
+                id: choice.id,
+                title: choice.title,
+              })),
+            }}
+            key={question.id}
+          />
         ))}
       </Box>
 
@@ -133,10 +132,36 @@ const ResultsPage = () => {
   );
 };
 
-export const getServerSideProps = async ({ locale }: { locale: string }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const locale = context.locale as string;
+  const quizId = context.params?.id as string;
+  const quizAttemptId = context.params?.attemptId as string;
 
+  const { req } = context;
+
+  // Parse the cookies from the request
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const token = cookies.token;
+
+  const quizResult = await getQuizAttemptServerSide(
+    quizId,
+    quizAttemptId,
+    token
+  );
+
+  if ("notFound" in quizResult && quizResult.notFound) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["common"])),
+      data: { quizResult },
+    },
+  };
+};
 export default ResultsPage;

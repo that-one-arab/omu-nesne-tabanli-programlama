@@ -294,7 +294,7 @@ def create_quiz_attempt(quiz_id):
 
 # Get Quiz Attempt
 @quizzing_blueprint.route(
-    "/quizzes/<int:quiz_id>/attempt/<int:attempt_id>", methods=["GET"]
+    "/quizzes/<int:quiz_id>/attempts/<int:attempt_id>", methods=["GET"]
 )
 @jwt_required()
 def get_quiz_attempt(quiz_id, attempt_id):
@@ -305,13 +305,42 @@ def get_quiz_attempt(quiz_id, attempt_id):
     if quiz_attempt.quiz.created_by_id != current_user.id:
         return jsonify({"error": "Unauthorized"}), 403
 
-    answered_questions = [
+    quiz = Quiz.query.get_or_404(quiz_id)
+
+    def get_choice(question: Question):
+        for q in quiz_attempt.answered_questions:
+
+            if q.question_id == question.id:
+                answer = Answer.query.get(q.choice_id)
+                return {
+                    "id": answer.id,
+                    "title": answer.title,
+                    "is_correct": answer.is_correct,
+                }
+        return None
+
+    def get_correct_choice(question: Question):
+        for a in question.answers:
+            if a.is_correct:
+                return {
+                    "id": a.id,
+                    "title": a.title,
+                    "is_correct": a.is_correct,
+                }
+        return None
+
+    questions = [
         {
-            "question_id": q.question_id,
-            "choice_id": q.choice_id,
-            "is_correct": q.choice.is_correct,
+            "id": q.id,
+            "title": q.title,
+            "answers": [
+                {"id": a.id, "title": a.title, "is_correct": a.is_correct}
+                for a in q.answers
+            ],
+            "choice": get_choice(q),
+            "correct_choice": get_correct_choice(q),
         }
-        for q in quiz_attempt.answered_questions
+        for q in quiz.questions
     ]
 
     return jsonify(
@@ -321,6 +350,6 @@ def get_quiz_attempt(quiz_id, attempt_id):
             "result": quiz_attempt.result,
             "did_pass": quiz_attempt.did_pass,
             "success_percentage": quiz_attempt.quiz.success_percentage,
-            "answered_questions": answered_questions,
+            "questions": questions,
         }
     )

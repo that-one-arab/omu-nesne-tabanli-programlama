@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import cookie from "cookie";
 import {
   Card,
   CardContent,
@@ -11,9 +12,7 @@ import {
   Box,
   Stack,
   IconButton,
-  ButtonPropsColorOverrides,
 } from "@mui/material";
-import { OverridableStringUnion } from "@mui/types";
 import DefaultLayout from "@/components/layouts/DefaultLayout";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
@@ -23,105 +22,52 @@ import { Question } from "@/components/QuizQuestionPreview";
 import { useTranslation } from "next-i18next";
 import MessageDialog from "@/components/Dialogs/MessageDialog";
 import LoadingDialog from "@/components/Dialogs/LoadingDialog";
+import { GetServerSidePropsContext } from "next";
+import { getQuizServerSide, useCreateQuizAttempt } from "@/util/api/quizzes";
+import { transformQuiz } from "@/util/data_transformation";
+import { GetQuizResponse } from "@/util/types";
+import { useRouter } from "next/router";
 
-interface QuizQuestion extends Question {
+export interface QuizQuestion extends Question {
   selectedChoice: {
     id: string;
+    title?: string;
+    isCorrect?: boolean;
   };
 }
-
-const QUESTIONS: Question[] = [
-  {
-    id: "1",
-    title: "What is the capital of France?",
-    choices: [
-      {
-        id: "1",
-        title: "Paris",
-      },
-      {
-        id: "2",
-        title: "London",
-      },
-      {
-        id: "3",
-        title: "Berlin",
-      },
-      {
-        id: "4",
-        title: "Madrid",
-      },
-    ],
-    correctChoice: {
-      id: "1",
-      title: "Paris",
-    },
-  },
-  {
-    id: "2",
-    title: "What is the capital of Germany?",
-    choices: [
-      {
-        id: "1",
-        title: "Paris",
-      },
-      {
-        id: "2",
-        title: "London",
-      },
-      {
-        id: "3",
-        title: "Berlin",
-      },
-      {
-        id: "4",
-        title: "Madrid",
-      },
-    ],
-    correctChoice: {
-      id: "3",
-      title: "Berlin",
-    },
-  },
-  {
-    id: "3",
-    title: "What is the capital of Turkey?",
-    choices: [
-      {
-        id: "1",
-        title: "Paris",
-      },
-      {
-        id: "2",
-        title: "London",
-      },
-      {
-        id: "3",
-        title: "Ankara",
-      },
-      {
-        id: "4",
-        title: "Madrid",
-      },
-    ],
-    correctChoice: {
-      id: "3",
-      title: "Ankara",
-    },
-  },
-];
 
 const CARD_WIDTH = 1000;
 
 const maxButtonsPerPage = 30;
 
-const StartExam = () => {
+interface Quiz {
+  id: string;
+  title: string;
+  subject_id: string;
+  subject_title: string;
+  description: string;
+  duration: number;
+  success_percentage: number;
+  questions: Question[];
+}
+
+interface Props {
+  data: {
+    quiz: Quiz;
+  };
+}
+
+const StartExam = ({ data }: Props) => {
   const { t } = useTranslation();
+  const router = useRouter();
+  const quizId = router.query.id as string;
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
+  const { quiz } = data;
+
   const [questions, setQuestions] = useState<QuizQuestion[]>(
-    QUESTIONS.map((question) => ({
+    quiz.questions.map((question) => ({
       ...question,
       selectedChoice: {
         id: "",
@@ -130,7 +76,6 @@ const StartExam = () => {
     }))
   );
 
-  // State and functions as before
   const [page, setPage] = useState(0);
   const [messageDialog, setMessageDialog] = useState({
     open: false,
@@ -140,6 +85,8 @@ const StartExam = () => {
     open: false,
     message: "",
   });
+
+  const [submitQuiz] = useCreateQuizAttempt();
 
   const totalPages = Math.ceil(questions.length / maxButtonsPerPage);
 
@@ -172,7 +119,7 @@ const StartExam = () => {
     setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
   };
 
-  const submitExam = () => {
+  const submitExam = async () => {
     console.log("Submitted answers:", questions);
     if (!didAnswerAllQuestions) {
       setMessageDialog({
@@ -190,12 +137,24 @@ const StartExam = () => {
       message: t("submittingExam"),
     });
 
-    // SUBMIT
+    try {
+      const data = await submitQuiz(quizId, questions);
+      console.info("Submitted exam:", data);
 
-    setLoadingDialog({
-      open: false,
-      message: "",
-    });
+      setLoadingDialog({
+        open: false,
+        message: "",
+      });
+
+      router.push(`/quizzes/${quizId}/result/${data.id}`);
+    } catch (error) {
+      console.error("Failed to submit exam:", error);
+
+      setLoadingDialog({
+        open: false,
+        message: "",
+      });
+    }
   };
 
   const goToQuestion = (index: number) => {
@@ -304,6 +263,7 @@ const StartExam = () => {
         </Card>
       </div>
       <MessageDialog
+        title={messageDialog.message}
         open={messageDialog.open}
         message={messageDialog.message}
         onClose={() => setMessageDialog({ open: false, message: "" })}
@@ -316,10 +276,37 @@ const StartExam = () => {
   );
 };
 
-export const getServerSideProps = async ({ locale }: { locale: string }) => ({
-  props: {
-    ...(await serverSideTranslations(locale, ["common"])),
-  },
-});
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const locale = context.locale as string;
+  const quizId = context.params?.id as string;
+
+  const { req } = context;
+
+  // Parse the cookies from the request
+  const cookies = cookie.parse(req.headers.cookie || "");
+  const token = cookies.token;
+
+  const fetchedQuiz = await getQuizServerSide(quizId, token);
+
+  if ("notFound" in fetchedQuiz && fetchedQuiz.notFound) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const quiz = transformQuiz(fetchedQuiz as GetQuizResponse, {
+    shuffleQuestions: true,
+    shuffleAnswers: true,
+  });
+
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["common"])),
+      data: { quiz },
+    },
+  };
+};
 
 export default StartExam;

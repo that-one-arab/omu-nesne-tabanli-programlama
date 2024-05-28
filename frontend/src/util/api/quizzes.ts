@@ -1,6 +1,7 @@
 import { PUBLIC_API_URL, customFetch } from "@/util";
-import { GetQuizResponse } from "@/util/types";
 import { useEffect, useState } from "react";
+import { GetQuizResponse } from "@/util/types";
+import { QuizQuestion } from "@/pages/quizzes/[id]/start";
 
 interface ISubjectsApiResponse {
   data: {
@@ -239,6 +240,33 @@ export function useDeleteQuiz() {
   return [handleDeleteQuiz];
 }
 
+export function useCreateQuizAttempt() {
+  async function createQuizAttempt(quizId: string, questions: QuizQuestion[]) {
+    const response = await customFetch(`/quizzing/quizzes/${quizId}/attempt`, {
+      method: "POST",
+      body: JSON.stringify({
+        answered_questions: questions.map((q) => ({
+          question_id: q.id,
+          choice_id: q.selectedChoice.id,
+        })),
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create quiz attempt");
+    }
+
+    const data = await response.json();
+
+    return {
+      message: data.message as string,
+      id: data.attempt_id as string,
+    };
+  }
+
+  return [createQuizAttempt];
+}
+
 export async function getQuizServerSide(
   quizId: string,
   token: string
@@ -285,4 +313,60 @@ export async function getQuizServerSide(
   data.subject_title = subjectData.title;
 
   return data;
+}
+
+export interface QuizResult {
+  id: number;
+  quizId: number;
+  result: number;
+  didPass: boolean;
+  successPercentage: number;
+  questions: QuizQuestion[];
+}
+
+export async function getQuizAttemptServerSide(
+  quizId: string,
+  attemptId: string,
+  token: string
+): Promise<QuizResult | { notFound: boolean }> {
+  const response = await fetch(
+    `${PUBLIC_API_URL}/quizzing/quizzes/${quizId}/attempts/${attemptId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return {
+        notFound: true,
+      };
+    }
+
+    throw new Error("Failed to fetch quiz attempt");
+  }
+
+  const data = await response.json();
+  console.info("Data", data.questions);
+
+  return {
+    id: data.id,
+    quizId: data.quiz_id,
+    result: data.result, // number
+    didPass: data.did_pass, // boolean,
+    successPercentage: data.success_percentage, // number
+    questions: data.questions.map((q: any) => ({
+      id: q.id,
+      title: q.title,
+      choices: q.answers.map((a: any) => ({
+        id: a.id,
+        title: a.title,
+        isCorrect: a.is_correct,
+      })),
+      selectedChoice: q.choice,
+      correctChoice: q.correct_choice,
+    })),
+  };
 }

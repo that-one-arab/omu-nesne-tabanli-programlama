@@ -97,5 +97,6 @@
     "materialTooShortSubtitle": "Uploaded material too short for requested number of questions. Please upload more files and/or longer material",
     "areYouSureYouWantToDelete": "Are you sure you want to delete",
     "thisActionCannotBeUndone": "This action cannot be undone",
-    "quizDeleted": "Quiz deleted successfully"
+    "quizDeleted": "Quiz deleted successfully",
+    "score": "Score"
 }
