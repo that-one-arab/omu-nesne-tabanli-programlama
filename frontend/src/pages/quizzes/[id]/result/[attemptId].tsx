@@ -24,7 +24,10 @@ const ResultsPage = ({ data }: Props) => {
   const calculateScore = () => {
     let score = 0;
     quizResult.questions.forEach((question, index) => {
-      if (question.correctChoice.id === question.selectedChoice.id) {
+      if (
+        question?.selectedChoice &&
+        question.correctChoice.id === question.selectedChoice.id
+      ) {
         score += 1;
       }
     });
@@ -36,7 +39,7 @@ const ResultsPage = ({ data }: Props) => {
   const passed = score / quizResult.questions.length >= passThreshold;
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Box mt={5} mb={5} textAlign="center">
         <Typography variant="h3" gutterBottom sx={{ fontWeight: "bold" }}>
           {passed
@@ -89,10 +92,12 @@ const ResultsPage = ({ data }: Props) => {
             question={{
               id: question.id,
               title: question.title,
-              selectedChoice: {
-                id: question.selectedChoice.id,
-                title: question.selectedChoice.title as string,
-              },
+              selectedChoice: question?.selectedChoice
+                ? {
+                    id: question.selectedChoice.id,
+                    title: question.selectedChoice.title as string,
+                  }
+                : undefined,
               correctChoice: question.correctChoice,
               choices: question.choices.map((choice) => ({
                 id: choice.id,

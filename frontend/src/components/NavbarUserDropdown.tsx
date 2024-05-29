@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useUser } from "@/util/hooks";
 import { useRouter } from "next/router";
 
-const NavbarUserDropdown = ({ className }: { className: string }) => {
+const NavbarUserDropdown = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
   const user = useUser();
   const router = useRouter();

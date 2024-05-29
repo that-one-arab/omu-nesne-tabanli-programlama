@@ -1,5 +1,5 @@
 import { PUBLIC_API_URL, customFetch } from "@/util";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { GetQuizResponse } from "@/util/types";
 import { QuizQuestion } from "@/pages/quizzes/[id]/start";
 
@@ -18,9 +18,11 @@ export function useGetSubjects(title?: string): ISubjectsApiResponse {
   useEffect(() => {
     (async () => {
       try {
-        const response = await customFetch(
-          `/quizzing/subjects?search_query=${title}`
-        );
+        let query = "/quizzing/subjects";
+        if (title) {
+          query += `?search_query=${title}`;
+        }
+        const response = await customFetch(query);
         if (!response.ok) {
           return null;
         }
@@ -91,6 +93,73 @@ export function useCreateOrGetSubject() {
   }
 
   return [handleCreateOrGetSubject];
+}
+
+export function useGetQuizzes(initialVariables?: {
+  title?: string;
+  subjectId?: string;
+}): {
+  data: {
+    id: string;
+    title: string;
+    subject_id: string;
+    subject_title: string;
+    number_of_questions: number;
+    description: string;
+  }[];
+  error: null | string;
+  loading: boolean;
+  refetch: (variables?: { title?: string; subjectId?: string }) => void;
+} {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [variables, setVariables] = useState(initialVariables);
+
+  const fetchQuizzes = useCallback(
+    async (fetchVariables?: { title?: string; subjectId?: string }) => {
+      setLoading(true);
+      try {
+        let query = "/quizzing/quizzes";
+        const vars = fetchVariables || variables;
+
+        if (vars?.subjectId === "all") vars.subjectId = "";
+
+        if (vars?.title) {
+          query += `?search_query=${vars.title}`;
+        } else if (vars?.subjectId) {
+          query += `?subject_id=${vars.subjectId}`;
+        } else if (vars?.title && vars?.subjectId) {
+          query += `?search_query=${vars.title}&subject_id=${vars.subjectId}`;
+        }
+
+        const response = await customFetch(query);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch quizzes");
+        }
+
+        const data = await response.json();
+        setData(data);
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    fetchQuizzes();
+  }, [fetchQuizzes]);
+
+  const refetch = (newVariables?: { title?: string; subjectId?: string }) => {
+    setVariables(newVariables);
+    fetchQuizzes(newVariables);
+  };
+
+  return { data, error, loading, refetch };
 }
 
 interface ICreateQuizParams {
@@ -247,7 +316,7 @@ export function useCreateQuizAttempt() {
       body: JSON.stringify({
         answered_questions: questions.map((q) => ({
           question_id: q.id,
-          choice_id: q.selectedChoice.id,
+          choice_id: q?.selectedChoice?.id,
         })),
       }),
     });

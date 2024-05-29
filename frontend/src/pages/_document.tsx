@@ -1,8 +1,13 @@
 import { Html, Head, Main, NextScript } from "next/document";
+import { useRouter } from "next/router";
 
-export default function Document() {
+export default function Document({ locale }: { locale: string }) {
+  // const { locale } = useRouter();
+  const dir = locale === "ar" ? "rtl" : "ltr";
+  console.info({ locale, dir });
+
   return (
-    <Html lang="en">
+    <Html lang={locale} dir={dir}>
       <Head />
       <body>
         <Main />
@@ -11,3 +16,10 @@ export default function Document() {
     </Html>
   );
 }
+
+Document.getInitialProps = async (ctx: any) => {
+  const initialProps = await ctx.defaultGetInitialProps(ctx);
+  const { locale } = ctx;
+
+  return { ...initialProps, locale };
+};

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import cookie from "cookie";
 import {
   Card,
@@ -29,7 +29,7 @@ import { GetQuizResponse } from "@/util/types";
 import { useRouter } from "next/router";
 
 export interface QuizQuestion extends Question {
-  selectedChoice: {
+  selectedChoice?: {
     id: string;
     title?: string;
     isCorrect?: boolean;
@@ -62,9 +62,36 @@ const StartExam = ({ data }: Props) => {
   const router = useRouter();
   const quizId = router.query.id as string;
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-
   const { quiz } = data;
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(10 || quiz.duration);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Timer effect
+  useEffect(() => {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (timeLeft <= 0) {
+      // Time's up, automatically submit the quiz or show a message
+      submitExam("time-ended");
+      return;
+    }
+    const timer = setInterval(() => {
+      setTimeLeft(timeLeft - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   const [questions, setQuestions] = useState<QuizQuestion[]>(
     quiz.questions.map((question) => ({
@@ -119,9 +146,10 @@ const StartExam = ({ data }: Props) => {
     setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
   };
 
-  const submitExam = async () => {
-    console.log("Submitted answers:", questions);
-    if (!didAnswerAllQuestions) {
+  const submitExam = async (reason: "user-submit" | "time-ended") => {
+    setIsSubmitting(true);
+
+    if (!didAnswerAllQuestions && reason === "user-submit") {
       setMessageDialog({
         open: true,
         message: t(
@@ -132,14 +160,8 @@ const StartExam = ({ data }: Props) => {
       return;
     }
 
-    setLoadingDialog({
-      open: true,
-      message: t("submittingExam"),
-    });
-
     try {
       const data = await submitQuiz(quizId, questions);
-      console.info("Submitted exam:", data);
 
       setLoadingDialog({
         open: false,
@@ -154,6 +176,8 @@ const StartExam = ({ data }: Props) => {
         open: false,
         message: "",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -162,7 +186,7 @@ const StartExam = ({ data }: Props) => {
   };
 
   const didAnswerAllQuestions = questions.every(
-    (question) => question.selectedChoice.id
+    (question) => question?.selectedChoice?.id
   );
 
   return (
@@ -192,7 +216,7 @@ const StartExam = ({ data }: Props) => {
                   index === currentQuestionIndex ? "contained" : "outlined"
                 }
                 color={
-                  questions[index].selectedChoice.id ? "success" : "primary"
+                  questions[index].selectedChoice?.id ? "success" : "primary"
                 }
                 onClick={() => goToQuestion(index + page * maxButtonsPerPage)}
                 sx={{
@@ -213,6 +237,18 @@ const StartExam = ({ data }: Props) => {
             <ArrowForwardIosNewIcon />
           </IconButton>
         </Box>
+        <Box sx={{ mb: 2 }} display="flex" alignItems="center">
+          <img
+            width="100"
+            height="100"
+            src="https://img.icons8.com/ios/100/time--v1.png"
+            alt="time--v1"
+            style={{ width: "40px" }}
+          />{" "}
+          <Typography variant="h6" marginX={2}>
+            {formatTime(timeLeft)}
+          </Typography>
+        </Box>
         <Card sx={{ mb: 5, width: `${CARD_WIDTH}px` }}>
           <CardContent>
             <Typography variant="h5" sx={{ mb: 2 }}>
@@ -222,7 +258,7 @@ const StartExam = ({ data }: Props) => {
               <FormLabel>{t("common:choices")}</FormLabel>
               <RadioGroup
                 name="quiz-choices"
-                value={questions[currentQuestionIndex].selectedChoice.id}
+                value={questions[currentQuestionIndex].selectedChoice?.id || ""}
                 onChange={handleAnswerChange}
               >
                 {questions[currentQuestionIndex].choices.map((choice) => (
@@ -249,7 +285,7 @@ const StartExam = ({ data }: Props) => {
                 <MUIButton
                   variant="contained"
                   color="primary"
-                  onClick={submitExam}
+                  onClick={() => submitExam("user-submit")}
                 >
                   {t("common:submit")}
                 </MUIButton>

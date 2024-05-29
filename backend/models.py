@@ -48,7 +48,7 @@ class Quiz(db.Model):
 class UserChoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey("question.id"), nullable=False)
-    choice_id = db.Column(db.Integer, db.ForeignKey("answer.id"), nullable=False)
+    choice_id = db.Column(db.Integer, db.ForeignKey("answer.id"), nullable=True)
     quiz_attempt_id = db.Column(
         db.Integer, db.ForeignKey("quiz_attempt.id"), nullable=False
     )

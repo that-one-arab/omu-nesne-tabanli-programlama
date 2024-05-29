@@ -94,15 +94,12 @@ def delete_subject(subject_id):
 @quizzing_blueprint.route("/quizzes", methods=["POST"])
 @jwt_required()
 def create_quiz():
-    print("Creating quiz")
     # Used for error handling and/or cleanup
     created_files_paths = []
 
     files = request.files.getlist("file")
-    print("Files: ", files)
 
     data = request.form.to_dict()
-    print("Data: ", data)
 
     subject_id = data.get("subject_id")
     title = data.get("title")
@@ -111,8 +108,6 @@ def create_quiz():
     duration = data.get("duration")
     number_of_questions = data.get("number_of_questions")
     number_of_questions = int(number_of_questions) if number_of_questions else 0
-
-    print("Subject ID: ", subject_id)
 
     try:
         # Make sure the subject exists
@@ -178,13 +173,13 @@ def get_quizzes():
     if search_query:
         # escape any single or double quotes in the search query
         search_query = search_query.replace("'", "").replace('"', "")
-        quizzes = Quiz.query.filter(
+        quizzes = quizzes.filter(
             Quiz.title.ilike(f"%{search_query}%")
             | Quiz.description.ilike(f"%{search_query}%")
         )
 
     if subject_id:
-        quizzes = Quiz.query.filter_by(
+        quizzes = quizzes.filter_by(
             created_by_id=current_user.id, subject_id=subject_id
         )
 
@@ -192,11 +187,13 @@ def get_quizzes():
         {
             "id": q.id,
             "subject_id": q.subject_id,
+            "subject_title": q.subject.title,
             "title": q.title,
             "success_percentage": q.success_percentage,
             "description": q.description,
             "duration": q.duration,
             "created_by_id": q.created_by_id,
+            "number_of_questions": len(q.questions),
         }
         for q in quizzes.all()
     ]
@@ -241,9 +238,26 @@ def delete_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     if quiz.created_by_id != current_user.id:
         return jsonify({"error": "Unauthorized"}), 403
-    db.session.delete(quiz)
-    db.session.commit()
-    return jsonify({"message": "Quiz deleted successfully!"}), 200
+
+    try:
+        db.session.begin_nested()
+
+        for q in quiz.questions:
+            UserChoice.query.filter_by(question_id=q.id).delete()
+            Answer.query.filter_by(question_id=q.id).delete()
+
+        Question.query.filter_by(quiz_id=quiz_id).delete()
+
+        QuizAttempt.query.filter_by(quiz_id=quiz_id).delete()
+
+        db.session.delete(quiz)
+        db.session.commit()
+
+        return jsonify({"message": "Quiz deleted successfully!"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 
 # Create Quiz Attempt
@@ -262,17 +276,25 @@ def create_quiz_attempt(quiz_id):
         choice_id = q["choice_id"]
 
         question = Question.query.get_or_404(question_id)
-        answer = Answer.query.get_or_404(choice_id)
+        answer = None
+        # If time runs out, user may not answer all questions, so answer may be None
+        if choice_id:
+            answer = Answer.query.get_or_404(choice_id)
 
-        if answer.question_id != question.id:
-            return jsonify({"error": "Invalid choice for the question"}), 400
+        if not answer:
+            quiz_attempt.answered_questions.append(
+                UserChoice(question_id=question.id, choice_id=None)
+            )
+        else:
+            if answer.question_id != question.id:
+                return jsonify({"error": "Invalid choice for the question"}), 400
 
-        quiz_attempt.answered_questions.append(
-            UserChoice(question_id=question.id, choice_id=answer.id)
-        )
+            quiz_attempt.answered_questions.append(
+                UserChoice(question_id=question.id, choice_id=answer.id)
+            )
 
-        if answer.is_correct:
-            total_correct += 1
+            if answer.is_correct:
+                total_correct += 1
 
     quiz_attempt.result = total_correct * 100 // len(quiz.questions)
 
@@ -311,6 +333,9 @@ def get_quiz_attempt(quiz_id, attempt_id):
         for q in quiz_attempt.answered_questions:
 
             if q.question_id == question.id:
+                if not q.choice_id:
+                    return None
+
                 answer = Answer.query.get(q.choice_id)
                 return {
                     "id": answer.id,

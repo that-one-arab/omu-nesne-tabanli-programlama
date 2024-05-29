@@ -12,6 +12,12 @@ const Navbar = ({ className }: { className?: string }) => {
   ) => {
     const selectedLanguage = event.target.value;
     router.push(router.asPath, undefined, { locale: selectedLanguage });
+
+    if (selectedLanguage === "ar") {
+      document.documentElement.dir = "rtl";
+    } else {
+      document.documentElement.dir = "ltr";
+    }
   };
 
   return (
@@ -49,7 +55,14 @@ const Navbar = ({ className }: { className?: string }) => {
         </select>
       </div>
 
-      <NavbarUserDropdown className="absolute right-5 top-1" />
+      <div
+        style={{
+          [router.locale === "ar" ? "left" : "right"]: "1rem",
+        }}
+        className={"absolute top-1"}
+      >
+        <NavbarUserDropdown />
+      </div>
     </div>
   );
 };

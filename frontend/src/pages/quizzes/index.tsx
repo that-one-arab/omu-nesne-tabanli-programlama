@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -16,40 +16,73 @@ import { useRouter } from "next/router";
 import ConfirmationDialog from "@/components/Dialogs/DeleteConfirmationDialog";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useTranslation } from "next-i18next";
-
-const savedQuizzes = [
-  {
-    id: 1,
-    title: "Capitals of the World",
-    subject: "Geography",
-    numQuestions: 10,
-  },
-  { id: 2, title: "Math Basics", subject: "Mathematics", numQuestions: 5 },
-  // Add more quizzes as needed
-];
+import {
+  useDeleteQuiz,
+  useGetQuizzes,
+  useGetSubjects,
+} from "@/util/api/quizzes";
+import useSnackbarStore from "@/util/store/snackbar";
+import { useDebounce } from "@uidotdev/usehooks";
 
 const SavedQuizzes = () => {
   const router = useRouter();
   const { t } = useTranslation();
+  const showSnackbar = useSnackbarStore((state) => state.showSnackbar);
 
   const [searchText, setSearchText] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState({
+    id: "",
+    title: "",
+  });
+  const debouncedSearchText = useDebounce(searchText, 300);
+  const debouncedSubjectId = useDebounce(selectedSubject.id, 300);
+
+  const { data: subjects } = useGetSubjects();
+  const [deleteQuiz] = useDeleteQuiz();
+
+  const { data: quizzes, refetch } = useGetQuizzes({
+    title: searchText,
+    subjectId: selectedSubject.id,
+  });
+
+  useEffect(() => {
+    refetch({
+      title: debouncedSearchText,
+      subjectId: debouncedSubjectId,
+    });
+  }, [debouncedSearchText, debouncedSubjectId]);
 
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 
-  // Mock subjects for the dropdown filter
-  const subjects = ["All", "Geography", "Mathematics"];
+  const handleShowDeleteConfirmation = (quizId: string) => {
+    setShowConfirmationDialog(true);
+    router.push(`/quizzes/?quizId=${quizId}`, undefined, { shallow: true });
+  };
+
+  const handleHideDeleteConfirmation = () => {
+    router.push("/quizzes/", undefined, { shallow: true });
+    setShowConfirmationDialog(false);
+  };
 
   // Function to handle deleting the quiz
-  const handleDeleteQuiz = () => {
-    console.log("Quiz deleted!");
+  const handleDeleteQuiz = async (quizId: string) => {
+    try {
+      await deleteQuiz(quizId);
+      showSnackbar(t("common:quizDeleted"), "success");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting quiz", error);
+      showSnackbar(t("common:serverError"), "error");
+    } finally {
+      handleHideDeleteConfirmation();
+    }
   };
 
   return (
     <DefaultLayout>
       <Box sx={{ flexGrow: 1, padding: 3, mt: 10 }}>
         <Typography variant="h4" gutterBottom>
-          Saved Quizzes
+          {t("common:savedQuizzes")}
         </Typography>
         <Grid container sx={{ marginBottom: 3 }} spacing={1}>
           <Grid item xs={9}>
@@ -65,20 +98,41 @@ const SavedQuizzes = () => {
             <TextField
               label={t("common:subject")}
               select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
+              value={selectedSubject.id}
+              onChange={(e) => {
+                const selectedSubject = subjects.find(
+                  (s) => s.id === e.target.value
+                );
+
+                setSelectedSubject(
+                  selectedSubject || {
+                    id: "all",
+                    title: t("common:all"),
+                  }
+                );
+              }}
               fullWidth
             >
+              <MenuItem value="all">
+                <em>{t("common:all")}</em>
+              </MenuItem>
               {subjects.map((subject) => (
-                <MenuItem key={subject} value={subject}>
-                  {subject}
+                <MenuItem key={subject.id} value={subject.id}>
+                  {subject.title}
                 </MenuItem>
               ))}
             </TextField>
           </Grid>
         </Grid>
         <Grid container spacing={3}>
-          {savedQuizzes.map((quiz) => (
+          {quizzes && quizzes.length === 0 && (
+            <Grid item xs={12}>
+              <Typography padding={1} variant="h6">
+                {t("common:noQuizzesFound")}
+              </Typography>
+            </Grid>
+          )}
+          {quizzes.map((quiz) => (
             <Grid item xs={12} sm={6} md={3} key={quiz.id}>
               <Card
                 sx={{
@@ -95,10 +149,11 @@ const SavedQuizzes = () => {
                     {quiz.title}
                   </Typography>
                   <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Subject: {quiz.subject}
+                    {t("common:subject")}: {quiz.subject_title}
                   </Typography>
                   <Typography variant="body2">
-                    Number of Questions: {quiz.numQuestions}
+                    {t("common:quizNumberOfQuestions")}:{" "}
+                    {quiz.number_of_questions}
                   </Typography>
                 </CardContent>
                 <CardActions>
@@ -111,10 +166,10 @@ const SavedQuizzes = () => {
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowConfirmationDialog(true);
+                      handleShowDeleteConfirmation(quiz.id);
                     }}
                   >
-                    Delete
+                    {t("common:delete")}
                   </Button>
                 </CardActions>
               </Card>
@@ -124,10 +179,9 @@ const SavedQuizzes = () => {
       </Box>
       <ConfirmationDialog
         open={showConfirmationDialog}
-        onCancel={() => setShowConfirmationDialog(false)}
-        onConfirm={() => {
-          setShowConfirmationDialog(false);
-          handleDeleteQuiz();
+        onCancel={() => handleHideDeleteConfirmation()}
+        onConfirm={async () => {
+          await handleDeleteQuiz(router.query.quizId as string);
         }}
       />
     </DefaultLayout>

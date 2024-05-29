@@ -18,7 +18,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { Question, QuestionChoice } from "@/components/QuizQuestionPreview";
 
 interface FinishedQuizQuestion extends Question {
-  selectedChoice: QuestionChoice;
+  selectedChoice?: QuestionChoice;
 }
 
 interface Props {
@@ -38,10 +38,11 @@ const FinishedQuizQuestionPreview = ({ question }: Props) => {
         <Box display="flex" justifyContent="space-between">
           <Typography variant="h6">{question.title}</Typography>
           <Box>
-            {question.correctChoice.id === question.selectedChoice.id ? (
-              <CheckCircleOutlineIcon color="success" />
-            ) : (
+            {!question?.selectedChoice ||
+            question.correctChoice.id !== question.selectedChoice.id ? (
               <HighlightOffIcon color="error" />
+            ) : (
+              <CheckCircleOutlineIcon color="success" />
             )}
             <IconButton
               onClick={handleExpandClick}
@@ -55,10 +56,12 @@ const FinishedQuizQuestionPreview = ({ question }: Props) => {
         <Collapse in={expanded}>
           <List>
             {question.choices.map((choice) => {
-              const isUserAnswer = question.selectedChoice.id === choice.id;
+              const isUserAnswer = question?.selectedChoice?.id === choice.id;
               const isCorrectAnswer = choice.id === question.correctChoice.id;
               const isWrongAnswer =
-                choice.id === question.selectedChoice.id && !isCorrectAnswer;
+                question.selectedChoice &&
+                choice.id === question.selectedChoice.id &&
+                !isCorrectAnswer;
 
               return (
                 <ListItem key={`${question.id}-${choice.id}`}>

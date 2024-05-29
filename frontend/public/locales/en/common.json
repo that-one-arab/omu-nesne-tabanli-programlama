@@ -98,5 +98,8 @@
     "areYouSureYouWantToDelete": "Are you sure you want to delete",
     "thisActionCannotBeUndone": "This action cannot be undone",
     "quizDeleted": "Quiz deleted successfully",
-    "score": "Score"
+    "score": "Score",
+    "savedQuizzes": "Saved Quizzes",
+    "all": "All",
+    "noQuizzesFound": "No quizzes found"
 }
