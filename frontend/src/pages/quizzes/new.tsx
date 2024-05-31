@@ -89,10 +89,10 @@ const CreateExam: NextPage = () => {
     return (
       <DefaultLayout>
         <main className="flex flex-col items-center justify-center min-h-screen p-4">
-          <h1 className="text-4xl font-bold">{t("header")}</h1>
-          <p className="text-xl text-gray-600 mt-4">{t("subtitle")}</p>
+          <h1 className="text-5xl font-bold">{t("header")}</h1>
+          <p className="text-2xl text-gray-600 mt-4">{t("subtitle")}</p>
           <div className="mt-8 w-full max-w-md">
-            <p className="text-red-500">{subjectsError}</p>
+            <p className="text-red-500 text-lg">{subjectsError}</p>
           </div>
         </main>
       </DefaultLayout>
@@ -102,14 +102,14 @@ const CreateExam: NextPage = () => {
   return (
     <DefaultLayout>
       <main className="flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-4xl font-bold">{t("header")}</h1>
-        <p className="text-xl text-gray-600 mt-4">{t("subtitle")}</p>
+        <h1 className="text-5xl font-bold">{t("header")}</h1>
+        <p className="text-2xl text-gray-600 mt-4">{t("subtitle")}</p>
         <div className="mt-8 w-full max-w-lg">
           {/* Subject Title Field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="subjectTitle"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-medium text-gray-700"
             >
               {t("common:subjectTitle")}
             </label>
@@ -134,10 +134,10 @@ const CreateExam: NextPage = () => {
           </div>
 
           {/* Quiz Title Field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="quizTitle"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-medium text-gray-700"
             >
               {t("common:quizTitle")}
             </label>
@@ -145,17 +145,17 @@ const CreateExam: NextPage = () => {
               type="text"
               id="quizTitle"
               name="quizTitle"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm focus:outline-none"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg focus:outline-none"
               placeholder={t("common:quizTitlePlaceholder")}
               onChange={(e) => setQuizTitle(e.target.value)}
             />
           </div>
 
           {/* Quiz Duration Field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="quizDuration"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-medium text-gray-700"
             >
               {t("common:quizDuration")}
             </label>
@@ -163,17 +163,17 @@ const CreateExam: NextPage = () => {
               type="number"
               id="quizDuration"
               name="quizDuration"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm focus:outline-none"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg focus:outline-none"
               placeholder={t("common:quizDurationPlaceholder")}
               onChange={(e) => setQuizDuration(e.target.value)}
             />
           </div>
 
           {/* Quiz Number Of Questions Field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="quizNumberOfQuestions"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-medium text-gray-700"
             >
               {t("common:quizNumberOfQuestions")}
             </label>
@@ -181,17 +181,17 @@ const CreateExam: NextPage = () => {
               type="number"
               id="quizNumberOfQuestions"
               name="quizNumberOfQuestions"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm focus:outline-none"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg focus:outline-none"
               placeholder={t("common:quizNumberOfQuestionsPlaceholder")}
               onChange={(e) => setQuizNumberOfQuestions(e.target.value)}
             />
           </div>
 
           {/* Quiz Percentage Field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="quizPercentage"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-medium text-gray-700"
             >
               {t("common:quizPercentage")}
             </label>
@@ -199,7 +199,7 @@ const CreateExam: NextPage = () => {
               type="number"
               id="quizPercentage"
               name="quizPercentage"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm focus:outline-none"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg focus:outline-none"
               placeholder={t("common:quizPercentagePlaceholder")}
               max={100}
               min={1}
@@ -208,10 +208,10 @@ const CreateExam: NextPage = () => {
           </div>
 
           {/* Quiz Description Field */}
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="quizDescription"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-lg font-medium text-gray-700"
             >
               {t("common:quizDescription")}
             </label>
@@ -219,7 +219,7 @@ const CreateExam: NextPage = () => {
               id="quizDescription"
               name="quizDescription"
               rows={4}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm focus:outline-none"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg focus:outline-none"
               placeholder={t("common:quizDescriptionPlaceholder")}
               onChange={(e) => setQuizDescription(e.target.value)}
             ></textarea>
@@ -231,20 +231,20 @@ const CreateExam: NextPage = () => {
               type="file"
               multiple
               accept=".pdf,.md"
-              className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
+              className="block w-full text-lg text-gray-500
+              file:mr-4 file:py-3 file:px-6
               file:rounded-full file:border-0
-              file:text-sm file:font-semibold
+              file:text-lg file:font-semibold
               file:bg-primary file:text-white
               hover:file:bg-primary-dark
             "
               onChange={(e) => setFiles(e.target.files)}
             />
           </label>
-          <div className="flex justify-end w-full mt-4">
+          <div className="flex justify-end w-full mt-6">
             <button
               type="button"
-              className="mt-4 block text-sm font-semibold py-2 px-4
+              className="mt-4 block text-lg font-semibold py-3 px-6
              rounded-full border-0
              text-white bg-accent
              hover:bg-primary-dark

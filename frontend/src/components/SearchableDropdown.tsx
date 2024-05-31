@@ -105,7 +105,7 @@ export default function SearchableDropdown({
           setSearchTerm(e.target.value);
         }}
         onKeyDown={handleKeyDown}
-        className="block w-full rounded-md border-gray-300 sm:text-sm shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 focus:outline-none"
+        className="block w-full rounded-md border-gray-300 sm:text-lg shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 focus:outline-none"
         placeholder={placeholder}
       />
       {isDropdownOpen && (
