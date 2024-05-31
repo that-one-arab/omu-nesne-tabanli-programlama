@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 export default function Document({ locale }: { locale: string }) {
   // const { locale } = useRouter();
   const dir = locale === "ar" ? "rtl" : "ltr";
-  console.info({ locale, dir });
 
   return (
     <Html lang={locale} dir={dir}>

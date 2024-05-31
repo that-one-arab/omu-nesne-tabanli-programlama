@@ -251,7 +251,6 @@ export function useHandleCreateQuiz(): [
 
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
-        console.info("Checking task status");
         const response = await customFetch(`/tasks/result/${taskId}`);
 
         if (!response.ok) {
@@ -418,7 +417,6 @@ export async function getQuizAttemptServerSide(
   }
 
   const data = await response.json();
-  console.info("Data", data.questions);
 
   return {
     id: data.id,
