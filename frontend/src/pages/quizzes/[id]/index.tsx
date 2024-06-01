@@ -95,11 +95,7 @@ const QuizOverview = ({ data }: Props) => {
           </div>
         </div>
         <div className="mb-8 mt-20">
-          <p className="text-gray-600">
-            Quiz description goes here. This is a detailed explanation of the
-            quiz. It can span multiple lines and gives the user an idea of what
-            to expect from the quiz.
-          </p>
+          <p className="text-gray-600">{quiz.description}</p>
         </div>
         <div className="space-y-4">
           <h1 className="text-xl font-bold text-gray-800 mb-2 mt-20">
