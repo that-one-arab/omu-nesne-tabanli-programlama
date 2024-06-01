@@ -31,6 +31,7 @@ See each sub directory's (backend and frontend) README files.
 
 **Priority (medium)**
 
+- Optimize GPT question generating to reduce token usage
 - Add method to validate non-duplicate questions (questions that are too similar to one another)
 - Switch from `psycopg2-binary` to `psycopg2`. See [binary package note](https://pypi.org/project/psycopg2/) for more info
 

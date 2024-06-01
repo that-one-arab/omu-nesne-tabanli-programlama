@@ -34,6 +34,41 @@ const CreateExam: NextPage = () => {
   const [handleCreateQuiz, { data, loading }] = useHandleCreateQuiz();
 
   const handleSubmit = async () => {
+    if (
+      !quizTitle ||
+      !quizDuration ||
+      !quizNumberOfQuestions ||
+      !quizPercentage ||
+      (!subject.id && !subject.title) ||
+      !files ||
+      !files.length
+    ) {
+      setMessageDialog({
+        open: true,
+        title: t("common:missingFields"),
+        message: t("common:missingFieldsSubtitle"),
+      });
+
+      return;
+    }
+    // Validate type of fields
+    if (
+      isNaN(parseInt(quizDuration)) ||
+      parseInt(quizDuration) < 1 ||
+      isNaN(parseInt(quizNumberOfQuestions)) ||
+      parseInt(quizNumberOfQuestions) < 1 ||
+      isNaN(parseInt(quizPercentage)) ||
+      parseInt(quizPercentage) < 1
+    ) {
+      setMessageDialog({
+        open: true,
+        title: t("common:invalidFields"),
+        message: t("common: "),
+      });
+
+      return;
+    }
+
     try {
       const response = await handleCreateQuiz({
         subject,
@@ -81,6 +116,7 @@ const CreateExam: NextPage = () => {
         );
       }
     } catch (error) {
+      console.error("caught error", error);
       showSnackbar(t("common:serverError"), "error");
     }
   };

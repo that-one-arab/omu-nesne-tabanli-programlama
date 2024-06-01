@@ -101,5 +101,9 @@
     "score": "النتيجة",
     "savedQuizzes": "الاختبارات المحفوظة",
     "all": "الكل",
-    "noQuizzesFound": "لم يتم العثور على اختبارات"
+    "noQuizzesFound": "لم يتم العثور على اختبارات",
+    "missingFields": "الرجاء ملء جميع الحقول",
+    "missingFieldsSubtitle": "الرجاء ملء جميع الحقول قبل الإرسال",
+    "invalidFields": "الرجاء التحقق من الحقول",
+    "invalidFieldsSubtitle": "الرجاء التحقق من الحقول المعطاة وإعادة المحاولة"
 }

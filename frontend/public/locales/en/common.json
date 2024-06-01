@@ -20,7 +20,7 @@
     "quizDuration": "Quiz Duration",
     "quizDurationPlaceholder": "Enter the duration of the quiz in minutes",
     "quizNumberOfQuestions": "Number of Questions",
-    "quizNumberOfQuestionsPlaceholder": "Enter the number of questions you want to have the AI generate",
+    "quizNumberOfQuestionsPlaceholder": "The number of questions you want to have the AI generate",
     "quizDescription": "Quiz Description",
     "quizDescriptionPlaceholder": "Enter whatever you want to describe the quiz",
     "quizPercentage": "Quiz Percentage",
@@ -101,5 +101,9 @@
     "score": "Score",
     "savedQuizzes": "Saved Quizzes",
     "all": "All",
-    "noQuizzesFound": "No quizzes found"
+    "noQuizzesFound": "No quizzes found",
+    "missingFields": "Please fill in all fields",
+    "missingFieldsSubtitle": "Please fill in all fields before submitting",
+    "invalidFields": "Please fill in all fields correctly",
+    "invalidFieldsSubtitle": "Please fill in all fields correctly before submitting"
 }

@@ -64,9 +64,14 @@ export function useCreateOrGetSubject() {
     const getSubjectData = await getSubjectResponse.json();
 
     if (getSubjectData.length) {
-      return getSubjectData.find(
+      const subject = getSubjectData.find(
         (subject: { id: string; title: string }) => subject.title === title
       );
+      if (subject)
+        return {
+          id: subject.id,
+          title: subject.title,
+        };
     }
 
     // Else we create a new subject
@@ -251,21 +256,26 @@ export function useHandleCreateQuiz(): [
 
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
-        const response = await customFetch(`/tasks/result/${taskId}`);
+        try {
+          const response = await customFetch(`/tasks/result/${taskId}`);
 
-        if (!response.ok) {
-          clearInterval(interval);
-          reject("Failed to check task status");
-        }
+          if (!response.ok) {
+            clearInterval(interval);
+            reject("Failed to check task status");
+          }
 
-        const data = await response.json();
+          const data = await response.json();
 
-        if (data.successful) {
+          if (data.successful) {
+            clearInterval(interval);
+            resolve(data.value);
+          } else if (data.ready && !data.successful) {
+            clearInterval(interval);
+            reject(data.message);
+          }
+        } catch (error) {
           clearInterval(interval);
-          resolve(data.value);
-        } else if (data.ready && !data.successful) {
-          clearInterval(interval);
-          reject(data.message);
+          reject(error);
         }
       }, 2000);
     });
