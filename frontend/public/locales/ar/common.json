@@ -105,5 +105,6 @@
     "missingFields": "الرجاء ملء جميع الحقول",
     "missingFieldsSubtitle": "الرجاء ملء جميع الحقول قبل الإرسال",
     "invalidFields": "الرجاء التحقق من الحقول",
-    "invalidFieldsSubtitle": "الرجاء التحقق من الحقول المعطاة وإعادة المحاولة"
+    "invalidFieldsSubtitle": "الرجاء التحقق من الحقول المعطاة وإعادة المحاولة",
+    "xOutOfTotalQuestionsCreated": "{{count}} من {{total}} سؤال تم إنشاؤه"
 }

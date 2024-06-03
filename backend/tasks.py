@@ -6,13 +6,9 @@ from util.index import remove_files
 from util.quizgpt.index import QuizGPT
 
 
-@shared_task(ignore_result=False)
-def add_together(a: int, b: int) -> int:
-    return a + b
-
-
-@shared_task(ignore_result=False)
+@shared_task(bind=True, ignore_result=False)
 def create_quiz(
+    self,
     user_id: int,
     subject_id: int,
     title: str,
@@ -50,12 +46,17 @@ def create_quiz(
             }
 
         # Save the questions and answers to the database
-        for q in questions:
+        for i, q in enumerate(questions):
             question = Question(title=q.title)
             for a in q.answers:
                 answer = Answer(title=a.title, is_correct=a.is_correct)
                 question.answers.append(answer)
             quiz.questions.append(question)
+
+            # Update task progress
+            self.update_state(
+                state="PROGRESS", meta={"current": i + 1, "total": len(questions)}
+            )
 
         db.session.add(quiz)
         db.session.commit()

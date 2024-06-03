@@ -9,6 +9,7 @@ import { useState } from "react";
 import useSnackbarStore from "@/util/store/snackbar";
 import MessageDialog from "@/components/Dialogs/MessageDialog";
 import { useRouter } from "next/router";
+import ProgressDialog from "@/components/Dialogs/ProgressDialog";
 
 const CreateExam: NextPage = () => {
   const { t } = useTranslation();
@@ -25,13 +26,18 @@ const CreateExam: NextPage = () => {
   const [quizDescription, setQuizDescription] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
 
+  const [createQuizTaskId, setCreateQuizTaskId] = useState<string | null>(null);
+
   const [messageDialog, setMessageDialog] = useState({
     title: "",
     open: false,
     message: "",
+    onClose: () => {},
   });
+  const [openCreateQuizProgressDialog, setOpenCreateQuizProgressDialog] =
+    useState(false);
 
-  const [handleCreateQuiz, { data, loading }] = useHandleCreateQuiz();
+  const [handleCreateQuiz] = useHandleCreateQuiz();
 
   const handleSubmit = async () => {
     if (
@@ -47,6 +53,7 @@ const CreateExam: NextPage = () => {
         open: true,
         title: t("common:missingFields"),
         message: t("common:missingFieldsSubtitle"),
+        onClose: () => {},
       });
 
       return;
@@ -63,7 +70,8 @@ const CreateExam: NextPage = () => {
       setMessageDialog({
         open: true,
         title: t("common:invalidFields"),
-        message: t("common: "),
+        message: t("common:invalidFieldsSubtitle"),
+        onClose: () => {},
       });
 
       return;
@@ -79,42 +87,13 @@ const CreateExam: NextPage = () => {
         description: quizDescription,
         files,
       });
-      if (!response.quiz_id) {
-        // User material is too short for the number of questions requested
-        if (response.details.response_code === "too-short") {
-          setMessageDialog({
-            open: true,
-            title: t("common:materialTooShort"),
-            message: t("common:materialTooShortSubtitle"),
-          });
-
-          return;
-        }
+      if (!response.taskId) {
         showSnackbar(t("common:serverError"), "error");
         return;
       }
 
-      if (
-        response.details.response_message.includes(
-          "questions could not be generated"
-        )
-      ) {
-        const ungeneratedQuestions = parseInt(
-          response.details.response_message.split(" ")[0]
-        );
-
-        setMessageDialog({
-          open: true,
-          title: t("common:quizCreatedSuccessfully"),
-          message: t("common:couldNotGenerateXQuestions", {
-            count: ungeneratedQuestions,
-          }),
-        });
-      } else {
-        router.push(
-          `/quizzes/${response.quiz_id}?hideQuestions=true&disableDelete=true`
-        );
-      }
+      setCreateQuizTaskId(response.taskId);
+      setOpenCreateQuizProgressDialog(true);
     } catch (error) {
       console.error("caught error", error);
       showSnackbar(t("common:serverError"), "error");
@@ -292,24 +271,86 @@ const CreateExam: NextPage = () => {
           </div>
         </div>
       </main>
-      <LoadingDialog open={loading} message={t("common:creatingQuiz")} />
+      <ProgressDialog
+        open={openCreateQuizProgressDialog}
+        taskId={createQuizTaskId}
+        onClose={() => setOpenCreateQuizProgressDialog(false)}
+        totalQuestions={parseInt(quizNumberOfQuestions)}
+        onSuccess={(value) => {
+          // Reset task id
+          setCreateQuizTaskId(null);
+          setOpenCreateQuizProgressDialog(false);
+
+          // User material is too short for the number of questions requested
+          if (value.details.response_code === "too-short") {
+            setMessageDialog({
+              open: true,
+              title: t("common:materialTooShort"),
+              message: t("common:materialTooShortSubtitle"),
+              onClose: () => {},
+            });
+
+            return;
+          }
+
+          // Some questions were not generated
+          if (
+            value.details.response_message.includes(
+              "questions could not be generated"
+            )
+          ) {
+            const ungeneratedQuestionsCount = parseInt(
+              value.details.response_message.split(" ")[0]
+            );
+
+            setMessageDialog({
+              open: true,
+              title: t("common:quizCreatedSuccessfully"),
+              message: t("common:couldNotGenerateXQuestions", {
+                count: ungeneratedQuestionsCount,
+              }),
+              onClose: () => {
+                router.push(
+                  `/quizzes/${value.quiz_id}?hideQuestions=true&disableDelete=true`
+                );
+              },
+            });
+            return;
+          }
+
+          if (value.quiz_id) {
+            router.push(
+              `/quizzes/${value.quiz_id}?hideQuestions=true&disableDelete=true`
+            );
+          }
+        }}
+        onError={(message) => {
+          setCreateQuizTaskId(null);
+          setOpenCreateQuizProgressDialog(false);
+          setMessageDialog({
+            open: true,
+            title: t("common:serverError"),
+            // Only show the exception message in development
+            message: process.env.NODE_ENV === "development" ? message : "",
+            onClose: () => {},
+          });
+        }}
+      />
       <MessageDialog
         open={messageDialog.open}
         title={messageDialog.title}
         message={messageDialog.message}
         onClose={() => {
+          if (messageDialog.onClose) {
+            messageDialog.onClose();
+          }
+
           setMessageDialog({
             open: false,
             title: "",
             message: "",
+            onClose: () => {},
           });
-          if (data && data.quiz_id) {
-            router.push(
-              `/quizzes/${
-                data && data.quiz_id
-              }?hideQuestions=true&disableDelete=true`
-            );
-          }
         }}
       />
     </DefaultLayout>

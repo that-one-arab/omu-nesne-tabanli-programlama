@@ -105,5 +105,6 @@
     "missingFields": "Please fill in all fields",
     "missingFieldsSubtitle": "Please fill in all fields before submitting",
     "invalidFields": "Please fill in all fields correctly",
-    "invalidFieldsSubtitle": "Please fill in all fields correctly before submitting"
+    "invalidFieldsSubtitle": "Please fill in all fields correctly before submitting",
+    "xOutOfTotalQuestionsCreated": "{{count}} out of {{total}} questions created"
 }

@@ -105,5 +105,6 @@
     "missingFields": "Lütfen tüm alanları doldurun",
     "missingFieldsSubtitle": "Lütfen tüm alanları doldurduğunuzdan emin olun",
     "invalidFields": "Lütfen tüm alanları doğru bir şekilde doldurun",
-    "invalidFieldsSubtitle": "Lütfen tüm alanları doğru bir şekilde doldurduğunuzdan emin olun"
+    "invalidFieldsSubtitle": "Lütfen tüm alanları doğru bir şekilde doldurduğunuzdan emin olun",
+    "xOutOfTotalQuestionsCreated": "{{count}}/{{total}} soru oluşturuldu"
 }

@@ -177,22 +177,12 @@ interface ICreateQuizParams {
   files: FileList | null;
 }
 
-interface IHandleCreateQuizApiResult {
-  details: {
-    response_code: string;
-    response_message: string;
-  };
-  message: string;
-  quiz_id: string;
-}
-
 export function useHandleCreateQuiz(): [
-  (params: ICreateQuizParams) => Promise<IHandleCreateQuizApiResult>,
-  { data: IHandleCreateQuizApiResult | null; loading: boolean }
+  (params: ICreateQuizParams) => Promise<{ taskId: string | null }>,
+  { data: { taskId: string | null } | null; loading: boolean }
 ] {
-  const [data, setData] = useState<IHandleCreateQuizApiResult | null>(null);
+  const [data, setData] = useState<{ taskId: string | null }>({ taskId: null });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const [createOrGetSubject] = useCreateOrGetSubject();
 
@@ -249,49 +239,14 @@ export function useHandleCreateQuiz(): [
     }
   }
 
-  async function checkCreateQuizTask(taskId: string) {
-    if (!taskId) {
-      return;
-    }
-
-    return new Promise((resolve, reject) => {
-      const interval = setInterval(async () => {
-        try {
-          const response = await customFetch(`/tasks/result/${taskId}`);
-
-          if (!response.ok) {
-            clearInterval(interval);
-            reject("Failed to check task status");
-          }
-
-          const data = await response.json();
-
-          if (data.successful) {
-            clearInterval(interval);
-            resolve(data.value);
-          } else if (data.ready && !data.successful) {
-            clearInterval(interval);
-            reject(data.message);
-          }
-        } catch (error) {
-          clearInterval(interval);
-          reject(error);
-        }
-      }, 2000);
-    });
-  }
-
   async function handleCreateQuiz(
     params: ICreateQuizParams
-  ): Promise<IHandleCreateQuizApiResult> {
+  ): Promise<{ taskId: string | null }> {
     setLoading(true);
     try {
       const quizTaskId = await createQuiz(params);
-      const result = (await checkCreateQuizTask(
-        quizTaskId
-      )) as IHandleCreateQuizApiResult;
-      setData(result);
-      return result;
+      setData({ taskId: quizTaskId });
+      return { taskId: quizTaskId };
     } catch (error: any) {
       throw new Error(error);
     } finally {
